@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | TerranovaX</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+
+body{
+background:
+radial-gradient(circle at 20% 30%, rgba(31,111,67,0.25), transparent 40%),
+radial-gradient(circle at 80% 60%, rgba(122,31,43,0.25), transparent 40%),
+#050807;
+color:#d2d8d2;
+height:100vh;
+display:flex;
+}
+
+.wrapper{display:flex;width:100%;}
+
+.left{
+flex:1;display:flex;flex-direction:column;
+justify-content:center;padding:60px;
+}
+.left h1{font-size:42px;margin-bottom:20px;}
+.left span:nth-child(1){color:#7a1f2b;}
+.left span:nth-child(2){color:#1f6f43;}
+.left p{color:#9aa29a;max-width:420px;line-height:1.7;margin-bottom:25px;}
+.info{display:flex;flex-direction:column;gap:15px;margin-top:20px;}
+.info div{font-size:14px;color:#aaa;}
+
+.right{flex:1;display:flex;justify-content:center;align-items:center;}
+
+.form-box{
+width:100%;max-width:380px;padding:35px;
+background:rgba(255,255,255,0.03);
+backdrop-filter:blur(10px);
+border-radius:12px;
+border:1px solid rgba(255,255,255,0.05);
+}
+
+.input-group{position:relative;margin-bottom:20px;}
+.input-group input{
+width:100%;padding:14px 10px;
+background:transparent;border:none;outline:none;
+color:white;border-bottom:1px solid #444;
+}
+.input-group span{
+position:absolute;bottom:0;left:0;
+width:0%;height:2px;background:#1f6f43;transition:0.3s;
+}
+.input-group input:focus + span{width:100%;}
+.toggle{position:absolute;right:0;top:10px;font-size:12px;color:#888;cursor:pointer;}
+
+button{
+width:100%;padding:14px;border:none;border-radius:8px;
+background:#1f6f43;color:white;font-weight:600;
+cursor:pointer;transition:0.3s;
+}
+button:hover{box-shadow:0 0 15px rgba(31,111,67,0.6);}
+button:disabled{opacity:0.6;cursor:not-allowed;}
+
+.error{
+display:none;background:rgba(255,77,77,0.1);
+color:#ff4d4d;padding:10px;border-radius:6px;
+margin-bottom:15px;font-size:13px;
+}
+.success{
+display:none;background:rgba(31,111,67,0.15);
+color:#1f6f43;padding:10px;border-radius:6px;
+margin-bottom:15px;font-size:13px;text-align:center;
+}
+.footer{margin-top:15px;text-align:center;font-size:13px;}
+.footer a{color:#7a1f2b;text-decoration:none;}
+
+/* ── GOOGLE BUTTON ── */
+.divider{
+display:flex;align-items:center;gap:10px;
+margin:18px 0;color:#444;font-size:12px;
+}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:#222;}
+.btn-google{
+width:100%;padding:12px;margin-top:0;
+border:1px solid #333;border-radius:8px;
+background:transparent;color:#d2d8d2;
+font-size:14px;font-weight:500;
+cursor:pointer;transition:0.3s;
+display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-google:hover{border-color:#1f6f43;background:rgba(31,111,67,0.08);}
+.btn-google img{width:18px;height:18px;}
+
+@media(max-width:900px){
+.wrapper{flex-direction:column;}
+.left{padding:30px;text-align:center;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="left">
+  <h1>
+    <span>Welcome Back</span> <span>TerranovaX</span>
+  </h1>
+  <p>
+    Access your personalized disaster intelligence dashboard,
+    monitor real-time risks, and stay one step ahead with AI-powered alerts.
+  </p>
+  <div class="info">
+    <div>✔ Real-time environmental monitoring</div>
+    <div>✔ Smart alert system based on your region</div>
+    <div>✔ AI-driven predictive insights</div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="form-box">
+
+    <form id="loginForm">
+      <div class="error"   id="error"></div>
+      <div class="success" id="success">✅ Login successful. Redirecting...</div>
+
+      <div class="input-group">
+        <input type="email" id="email" placeholder="Email Address">
+        <span></span>
+      </div>
+
+      <div class="input-group">
+        <input type="password" id="password" placeholder="Password">
+        <span></span>
+        <div class="toggle" onclick="togglePass()">Show</div>
+      </div>
+
+      <button id="loginBtn" type="submit">Secure Login</button>
+    </form>
+
+    <!-- DIVIDER -->
+    <div class="divider">or</div>
+
+    <!-- GOOGLE SIGN IN -->
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Continue with Google
+    </button>
+
+    <div class="footer">
+      Don't have an account? <a href="signup.html">Create one</a>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script type="module">
+  import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZbIP44acM71ZW7eCblfNrLIE3HRptUgE",
+    authDomain: "magnificent-temples.firebaseapp.com",
+    projectId: "magnificent-temples",
+    storageBucket: "magnificent-temples.firebasestorage.app",
+    messagingSenderId: "836647714930",
+    appId: "1:836647714930:web:60ba09e18b183aae52c2eb"
+  };
+
+  const app      = initializeApp(firebaseConfig);
+  const auth     = getAuth(app);
+  const db       = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  const form     = document.getElementById("loginForm");
+  const error    = document.getElementById("error");
+  const success  = document.getElementById("success");
+  const loginBtn = document.getElementById("loginBtn");
+
+  // ── EMAIL LOGIN ──
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    error.style.display   = "none";
+    success.style.display = "none";
+    if(!email.includes("@")) return showError("Please enter a valid email address.");
+    if(password.length < 6) return showError("Password must be at least 6 characters.");
+    loginBtn.disabled    = true;
+    loginBtn.textContent = "Logging in...";
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      success.style.display = "block";
+      setTimeout(() => { window.location.href = "home.html"; }, 1500);
+    } catch(err) {
+      showError(getFirebaseError(err.code));
+      loginBtn.disabled    = false;
+      loginBtn.textContent = "Secure Login";
+    }
+  });
+
+  // ── GOOGLE LOGIN ──
+  window.signInWithGoogle = async function() {
+    try {
+      const result  = await signInWithPopup(auth, provider);
+      const user    = result.user;
+      const userDoc = await getDoc(doc(db, "tnx_users", user.uid));
+      if(!userDoc.exists()) {
+        window.location.href = "onboarding.html";
+      } else {
+        window.location.href = "home.html";
+      }
+    } catch(err) {
+      showError("Google sign-in failed. Please try again.");
+    }
+  }
+
+  function showError(msg) { error.innerText = msg; error.style.display = "block"; }
+
+  function getFirebaseError(code) {
+    const msgs = {
+      "auth/user-not-found":     "No account found. Please sign up.",
+      "auth/wrong-password":     "Incorrect password. Please try again.",
+      "auth/invalid-email":      "Invalid email address.",
+      "auth/too-many-requests":  "Too many attempts. Try again later.",
+      "auth/invalid-credential": "Incorrect email or password."
+    };
+    return msgs[code] || "Something went wrong. Please try again.";
+  }
+
+  window.togglePass = function() {
+    const input = document.getElementById("password");
+    input.type  = input.type === "password" ? "text" : "password";
+  }
+</script>
+
+</body>
+</html>

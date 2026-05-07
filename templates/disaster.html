@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TerranovaX - Disaster Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{
+  background:#050807;
+  color:#d2d8d2;
+  overflow-x:hidden;
+  overflow-y:auto;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(31,111,67,0.15), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(122,31,43,0.15), transparent 40%),
+    #050807;
+  animation:bgMove 10s infinite alternate;
+}
+@keyframes bgMove{0%{background-position:0% 0%}100%{background-position:100% 100%}}
+header{
+  position:fixed;top:0;width:100%;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 50px;background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(10px);z-index:1000;
+}
+.logo{color:#1f6f43;font-size:24px;font-weight:700;}
+nav a{color:#c9d1c8;text-decoration:none;margin-left:25px;transition:0.3s;}
+nav a:hover{color:#1f6f43;}
+.status-bar{
+  position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);
+  color:#aaa;font-size:14px;white-space:nowrap;
+}
+.section-title{
+  text-align:center;font-size:42px;
+  background:linear-gradient(90deg,#1f6f43,#7a1f2b,#8a6d3b);
+  -webkit-background-clip:text;color:transparent;
+  margin:100px 0 40px;
+}
+.alerts-container{
+  display:flex;flex-wrap:wrap;gap:15px;justify-content:center;padding:0 5%;
+}
+.alert-card{
+  background:rgba(30,30,30,0.5);padding:20px;border-radius:12px;
+  border-left:4px solid #1f6f43;min-width:250px;max-width:320px;
+  font-weight:600;transition:0.3s;font-size:14px;line-height:1.6;
+}
+.alert-card.red{border-left:4px solid #7a1f2b;color:#ff6b6b;}
+.alert-card.brown{border-left:4px solid #8a6d3b;color:#d2b48c;}
+.alert-card.green{border-left:4px solid #1f6f43;color:#4caf50;}
+.alert-card:hover{transform:translateY(-5px);}
+.chart-container{
+  padding:50px 5%;background:rgba(20,20,20,0.6);
+  border-radius:12px;backdrop-filter:blur(8px);margin:0 5% 80px;
+}
+.ai-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;margin:0 5% 80px;
+}
+.ai-card{
+  background:rgba(30,30,30,0.5);padding:20px;border-radius:12px;
+  border-left:4px solid #1f6f43;transition:0.3s;
+}
+.ai-card:hover{border-left:4px solid #7a1f2b;transform:translateY(-5px);}
+.ai-card h3{color:white;margin-bottom:8px;font-size:15px;}
+.ai-card p{color:#aaa;font-size:14px;}
+.ai-card .live-val{color:#1f6f43;font-size:22px;font-weight:700;margin-top:5px;}
+.ai-card .live-val.danger{color:#ff4d4d;}
+.ai-card .live-val.warn{color:#8a6d3b;}
+.steps{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;margin:0 5% 80px;
+}
+.step{
+  background:rgba(30,30,30,0.5);padding:20px;border-radius:12px;
+  border-left:4px solid #1f6f43;transition:0.3s;
+}
+.step:hover{border-left:4px solid #7a1f2b;transform:translateY(-5px);}
+.step h3{color:#1f6f43;margin-bottom:8px;}
+.step p{color:#aaa;font-size:14px;}
+.resources{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;margin:0 5% 80px;
+}
+.resource-card{
+  background:rgba(30,30,30,0.5);padding:15px;border-radius:12px;
+  border-left:4px solid #7a1f2b;color:#fff;transition:0.3s;font-size:14px;
+}
+.resource-card:hover{transform:translateY(-5px);}
+footer{text-align:center;padding:40px;color:#888;border-top:1px solid #222;}
+@media(max-width:768px){nav a{margin-left:15px;}}
+.disaster-stories{padding:0 5% 80px;}
+.stories-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;}
+.story-card{
+  background:rgba(30,30,30,0.6);border-radius:15px;padding:25px;
+  color:white;cursor:pointer;transition:0.3s;border-left:4px solid #1f6f43;
+}
+.story-card:hover{
+  transform:translateY(-10px);border-left:4px solid #7a1f2b;
+  box-shadow:0 0 30px rgba(122,31,43,0.5);
+}
+.story-card h3{margin-bottom:15px;text-align:center;}
+.story-step{
+  background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;
+  margin-bottom:10px;font-size:14px;opacity:0;transform:translateY(20px);
+  animation:slideIn 0.5s forwards;
+}
+.story-card:hover .story-step:nth-child(2){animation-delay:0.2s;}
+.story-card:hover .story-step:nth-child(3){animation-delay:0.4s;}
+.story-card:hover .story-step:nth-child(4){animation-delay:0.6s;}
+@keyframes slideIn{to{opacity:1;transform:translateY(0);}}
+@media(max-width:1200px){.stories-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.stories-grid{grid-template-columns:1fr;}}
+
+/* EQ TABLE */
+.eq-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;}
+.eq-table th{color:#1f6f43;padding:8px 12px;text-align:left;border-bottom:1px solid #222;}
+.eq-table td{padding:8px 12px;border-bottom:1px solid #111;color:#d2d8d2;}
+.eq-table tr:hover{background:rgba(31,111,67,0.05);}
+.mag-high{color:#ff4d4d;font-weight:700;}
+.mag-mid{color:#8a6d3b;font-weight:700;}
+.mag-low{color:#1f6f43;font-weight:700;}
+
+/* TSUNAMI PANEL */
+.tsunami-panel{
+  background:rgba(30,30,30,0.5);border-radius:12px;
+  border-left:4px solid #1f6f43;padding:20px;margin:0 5% 80px;
+  font-size:14px;line-height:1.8;
+}
+.tsunami-panel h3{color:#1f6f43;margin-bottom:10px;}
+.tsunami-safe{color:#4caf50;font-size:16px;}
+.tsunami-warn{color:#ff4d4d;font-size:16px;}
+
+/* NEARBY EQ PULSE GRID */
+.eq-pulse-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+  margin:0 5% 80px;
+}
+.eq-pulse-cell{
+  aspect-ratio:1/1;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:600;
+  text-align:center;
+  padding:6px;
+  cursor:pointer;
+  transition:0.3s;
+  position:relative;
+  overflow:hidden;
+}
+.eq-pulse-cell:hover{transform:scale(1.08);z-index:2;}
+.eq-pulse-cell.mag-crit{background:rgba(122,31,43,0.8);border:1px solid #7a1f2b;color:#ff6b6b;}
+.eq-pulse-cell.mag-high{background:rgba(180,60,30,0.6);border:1px solid #8a6d3b;color:#d2b48c;}
+.eq-pulse-cell.mag-mid{background:rgba(138,109,59,0.4);border:1px solid #8a6d3b;color:#d2b48c;}
+.eq-pulse-cell.mag-low{background:rgba(31,111,67,0.3);border:1px solid #1f6f43;color:#4caf50;}
+.eq-pulse-cell.safe{background:rgba(20,40,20,0.3);border:1px solid #1f6f43;color:#1f6f43;}
+.eq-pulse-cell .cell-mag{font-size:18px;font-weight:700;margin-bottom:3px;}
+.eq-pulse-cell .cell-place{font-size:9px;color:#aaa;line-height:1.2;}
+.pulse-ring{
+  position:absolute;
+  width:100%;height:100%;
+  border-radius:10px;
+  border:2px solid currentColor;
+  animation:pulseRing 2s infinite;
+  opacity:0;
+}
+@keyframes pulseRing{
+  0%{transform:scale(0.8);opacity:0.8;}
+  100%{transform:scale(1.3);opacity:0;}
+}
+
+/* DISASTER FEED */
+.disaster-feed{
+  background:rgba(20,20,20,0.6);
+  border-radius:12px;
+  padding:20px;
+  margin:0 5% 80px;
+  max-height:320px;
+  overflow-y:auto;
+}
+.disaster-feed::-webkit-scrollbar{width:4px;}
+.disaster-feed::-webkit-scrollbar-thumb{background:#1f6f43;border-radius:4px;}
+.feed-item{
+  padding:12px;
+  border-bottom:1px solid #111;
+  font-size:13px;
+  line-height:1.6;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+.feed-item:last-child{border-bottom:none;}
+.feed-dot{
+  width:8px;height:8px;border-radius:50%;
+  margin-top:5px;flex-shrink:0;
+}
+.feed-dot.red{background:#ff4d4d;}
+.feed-dot.brown{background:#8a6d3b;}
+.feed-dot.green{background:#1f6f43;}
+.feed-title{color:#d2d8d2;font-weight:600;}
+.feed-sub{color:#888;font-size:11px;margin-top:3px;}
+
+/* LOADING */
+.loading-txt{color:#8a6d3b;font-style:italic;font-size:13px;padding:10px;}
+
+/* TOOLTIP */
+.eq-tooltip{
+  display:none;
+  position:fixed;
+  background:rgba(20,20,20,0.95);
+  border:1px solid #1f6f43;
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:12px;
+  color:#d2d8d2;
+  z-index:999;
+  pointer-events:none;
+  max-width:220px;
+  line-height:1.6;
+}
+
+/* =========================
+   MOBILE OPTIMIZATION
+========================= */
+
+@media (max-width: 1024px){
+  header{
+    padding:15px 25px;
+  }
+  .section-title{
+    font-size:32px;
+    margin:80px 0 30px;
+  }
+}
+
+@media (max-width: 768px){
+
+  /* HEADER */
+  header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    padding:15px 20px;
+  }
+
+  nav{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  nav a{
+    margin:0;
+    font-size:13px;
+    background:rgba(255,255,255,0.05);
+    padding:6px 10px;
+    border-radius:6px;
+  }
+
+  .status-bar{
+    position:static;
+    transform:none;
+    font-size:12px;
+    margin-top:5px;
+  }
+
+  /* TITLES */
+  .section-title{
+    font-size:26px;
+    margin:70px 0 25px;
+  }
+
+  /* ALERT CARDS */
+  .alerts-container{
+    padding:0 20px;
+  }
+
+  .alert-card{
+    min-width:100%;
+    font-size:13px;
+  }
+
+  /* CHART */
+  .chart-container{
+    margin:0 20px 60px;
+    padding:20px;
+  }
+
+  /* SENSOR GRID */
+  .ai-grid{
+    grid-template-columns:1fr;
+    margin:0 20px 60px;
+  }
+
+  .ai-card{
+    padding:15px;
+  }
+
+  /* STEPS + RESOURCES */
+  .steps,
+  .resources{
+    grid-template-columns:1fr;
+    margin:0 20px 60px;
+  }
+
+  /* STORIES */
+  .stories-grid{
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+
+  .story-card{
+    padding:18px;
+  }
+
+  /* EARTHQUAKE TABLE */
+  .eq-table{
+    font-size:12px;
+  }
+
+  /* TSUNAMI PANEL */
+  .tsunami-panel{
+    margin:0 20px 60px;
+    padding:15px;
+  }
+
+  /* PULSE GRID */
+  .eq-pulse-grid{
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:0 20px 60px;
+  }
+
+  .eq-pulse-cell{
+    font-size:10px;
+    padding:5px;
+  }
+
+  .eq-pulse-cell .cell-mag{
+    font-size:14px;
+  }
+
+  /* DISASTER FEED */
+  .disaster-feed{
+    margin:0 20px 60px;
+    max-height:260px;
+  }
+
+  .feed-item{
+    font-size:12px;
+  }
+
+  /* TOOLTIP OFF FOR MOBILE */
+  .eq-tooltip{
+    display:none !important;
+  }
+}
+
+/* EXTRA SMALL DEVICES */
+@media (max-width: 480px){
+
+  .section-title{
+    font-size:22px;
+  }
+
+  .logo{
+    font-size:20px;
+  }
+
+  nav a{
+    font-size:12px;
+    padding:5px 8px;
+  }
+
+  .eq-pulse-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="eq-tooltip" id="eqTooltip"></div>
+
+<header>
+  <div class="logo">TerranovaX</div>
+  <nav>
+    <a href="home.html">Home</a>
+    <a href="climate.html">Climate</a>
+    <a href="disaster.html">Disaster Management</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="about.html">About</a>
+  </nav>
+  <div class="status-bar" id="status-bar">Monitoring Active | Last Update: --:--:--</div>
+</header>
+
+<!-- LIVE ALERTS -->
+<section>
+  <h2 class="section-title">Live Disaster Alerts</h2>
+  <div class="alerts-container" id="alerts-container">
+    <p class="loading-txt">Fetching live alerts...</p>
+  </div>
+</section>
+
+<!-- DISASTER TREND GRAPH -->
+<section>
+  <h2 class="section-title">Disaster Trends</h2>
+  <div class="chart-container">
+    <canvas id="disasterChart" height="200"></canvas>
+  </div>
+</section>
+
+<!-- NEARBY EARTHQUAKE TABLE -->
+<section>
+  <h2 class="section-title">🌍 Earthquakes Near You (USGS)</h2>
+  <div style="padding:0 5%;margin-bottom:80px;">
+    <div style="background:rgba(20,20,20,0.6);border-radius:12px;padding:20px;overflow-x:auto;">
+      <div id="eqLocationLabel" style="color:#8a6d3b;font-size:13px;margin-bottom:10px;">📍 Detecting your location...</div>
+      <table class="eq-table">
+        <thead>
+          <tr>
+            <th>Magnitude</th>
+            <th>Location</th>
+            <th>Distance</th>
+            <th>Depth</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="eqTableBody">
+          <tr><td colspan="5" class="loading-txt">Loading earthquake data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- NEARBY EQ PULSE GRID -->
+<section>
+  <h2 class="section-title">⚡ Nearby Seismic Pulse Grid</h2>
+  <div style="text-align:center;color:#aaa;font-size:13px;margin-bottom:20px;">Each cell = a real earthquake near you. Color = magnitude. Hover for details.</div>
+  <div class="eq-pulse-grid" id="eqPulseGrid">
+    <p class="loading-txt" style="padding:0 5%;">Loading seismic data...</p>
+  </div>
+</section>
+
+<!-- TSUNAMI STATUS -->
+<section>
+  <h2 class="section-title">🌊 Tsunami Status (NOAA)</h2>
+  <div class="tsunami-panel" id="tsunamiPanel">
+    <h3>Checking tsunami warnings...</h3>
+    <p class="loading-txt">Fetching NOAA data...</p>
+  </div>
+</section>
+
+<!-- SENSOR CARDS -->
+<section>
+  <h2 class="section-title">📡 Live Sensor Readings</h2>
+  <div class="ai-grid" id="ai-grid"></div>
+</section>
+
+<!-- REAL DISASTER FEED -->
+<section>
+  <h2 class="section-title">🌐 Global Disaster Feed</h2>
+  <div class="disaster-feed" id="disasterFeed">
+    <p class="loading-txt">Loading global events...</p>
+  </div>
+</section>
+
+<!-- PREVENTION TIPS -->
+<section>
+  <h2 class="section-title">Disaster Prevention Tips</h2>
+  <div class="steps">
+    <div class="step"><h3>🔥 Fire Safety</h3><p>Keep flammables away, install smoke detectors, maintain fire extinguishers.</p></div>
+    <div class="step"><h3>🌊 Flood Safety</h3><p>Move to higher ground, avoid water, and keep emergency kits ready.</p></div>
+    <div class="step"><h3>🌪️ Storm Safety</h3><p>Stay indoors, secure loose items, and follow alerts.</p></div>
+    <div class="step"><h3>🌍 Earthquake Safety</h3><p>Drop, cover, hold on, and keep emergency supplies ready.</p></div>
+  </div>
+</section>
+
+<!-- DISASTER STORIES -->
+<section class="disaster-stories">
+  <h2 class="section-title">Disaster Safety Stories</h2>
+  <div class="stories-grid">
+    <div class="story-card">
+      <h3>Cyclone 🌪️</h3>
+      <div class="story-step">🏃‍♂️ Move indoors to safe shelter</div>
+      <div class="story-step">🪟 Close all windows and doors</div>
+      <div class="story-step">📻 Listen to official alerts</div>
+    </div>
+    <div class="story-card">
+      <h3>Flood 🌊</h3>
+      <div class="story-step">⬆ Move to higher ground</div>
+      <div class="story-step">🚫 Avoid walking/driving in floodwater</div>
+      <div class="story-step">🎒 Keep emergency kit ready</div>
+    </div>
+    <div class="story-card">
+      <h3>Earthquake 🌍</h3>
+      <div class="story-step">🪑 Drop, Cover & Hold On</div>
+      <div class="story-step">🚶 Evacuate if instructed</div>
+      <div class="story-step">📱 Stay updated via alerts</div>
+    </div>
+    <div class="story-card">
+      <h3>Wildfire 🔥</h3>
+      <div class="story-step">🏃 Evacuate immediately</div>
+      <div class="story-step">😷 Wear mask to avoid smoke</div>
+      <div class="story-step">📻 Follow official updates</div>
+    </div>
+    <div class="story-card">
+      <h3>Heatwave ☀️</h3>
+      <div class="story-step">💧 Stay hydrated</div>
+      <div class="story-step">🏠 Stay indoors during peak heat</div>
+      <div class="story-step">🧊 Use cool compresses</div>
+    </div>
+  </div>
+</section>
+
+<!-- EMERGENCY RESOURCES -->
+<section>
+  <h2 class="section-title">Emergency Resources</h2>
+  <div class="resources">
+    <div class="resource-card">🚒 Fire Dept: 101</div>
+    <div class="resource-card">👮 Police: 100</div>
+    <div class="resource-card">🚑 Ambulance: 102</div>
+    <div class="resource-card">💧 Flood Helpline: 1800-180-5188</div>
+    <div class="resource-card">🌍 NDRF: 011-24363260</div>
+    <div class="resource-card">🌪️ Cyclone Helpline: 1070</div>
+  </div>
+</section>
+
+<footer>© 2026 TerranovaX | All Rights Reserved</footer>
+
+<script>
+const OWM_KEY = "bd5e378503939ddaee76f12ad7a97608";
+let userLat = 13.0827, userLon = 80.2707, userCity = "Chennai";
+let eqCounts = Array(10).fill(0), stormCounts = Array(10).fill(0), floodCounts = Array(10).fill(0);
+let timeLabels = Array(10).fill('--');
+
+// STATUS BAR
+setInterval(()=>{
+  const n = new Date();
+  document.getElementById('status-bar').innerText =
+    `Monitoring Active | Last Update: ${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+}, 1000);
+
+// CHART
+const ctx = document.getElementById('disasterChart').getContext('2d');
+const disasterChart = new Chart(ctx,{
+  type:'line',
+  data:{
+    labels:timeLabels,
+    datasets:[
+      {label:'Earthquakes (M2.5+) Nearby', data:[...eqCounts], borderColor:'#ff4d4d', backgroundColor:'rgba(255,77,77,0.08)', tension:0.3, fill:true},
+      {label:'Storm Alerts',               data:[...stormCounts], borderColor:'#1f6f43', backgroundColor:'rgba(31,111,67,0.08)', tension:0.3, fill:true},
+      {label:'Flood/Rain Alerts',          data:[...floodCounts], borderColor:'#8a6d3b', backgroundColor:'rgba(138,109,59,0.08)', tension:0.3, fill:true},
+    ]
+  },
+  options:{
+    responsive:true,
+    plugins:{legend:{labels:{color:'#d2d8d2'}}},
+    scales:{
+      x:{ticks:{color:'#d2d8d2'},grid:{color:'rgba(255,255,255,0.05)'}},
+      y:{ticks:{color:'#d2d8d2'},grid:{color:'rgba(255,255,255,0.05)'}},
+    }
+  }
+});
+
+function pushChart(eq, storm, flood){
+  const n = new Date();
+  const label = n.getHours()+":"+String(n.getMinutes()).padStart(2,'0');
+  eqCounts.push(eq);    eqCounts.shift();
+  stormCounts.push(storm); stormCounts.shift();
+  floodCounts.push(flood);  floodCounts.shift();
+  timeLabels.push(label);   timeLabels.shift();
+  disasterChart.data.datasets[0].data = [...eqCounts];
+  disasterChart.data.datasets[1].data = [...stormCounts];
+  disasterChart.data.datasets[2].data = [...floodCounts];
+  disasterChart.data.labels = [...timeLabels];
+  disasterChart.update();
+}
+
+// DISTANCE CALC (Haversine)
+function getDistKm(lat1,lon1,lat2,lon2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+
+// ALERTS
+const alertsContainer = document.getElementById('alerts-container');
+function addAlert(type, msg){
+  const loading = alertsContainer.querySelector('.loading-txt');
+  if(loading) loading.remove();
+  const div = document.createElement('div');
+  div.className = 'alert-card '+type;
+  div.innerHTML = `<div>${msg}</div><div style="font-size:11px;color:#666;margin-top:6px;">${new Date().toLocaleTimeString()}</div>`;
+  alertsContainer.prepend(div);
+  const all = alertsContainer.querySelectorAll('.alert-card');
+  if(all.length > 12) all[all.length-1].remove();
+  setTimeout(()=>{ try{ div.remove(); }catch(e){} }, 30000);
+}
+
+// SENSOR CARDS
+const sensors = {
+  temp:   {label:'🌡️ Temperature',      val:'--'},
+  wind:   {label:'💨 Wind Speed',        val:'--'},
+  rain:   {label:'🌧️ Rainfall',           val:'--'},
+  humid:  {label:'💧 Humidity',           val:'--'},
+  seismic:{label:'🌍 Nearest Earthquake',val:'--'},
+  city:   {label:'📍 Your Location',     val:'--'},
+};
+function buildSensorCards(){
+  const grid = document.getElementById('ai-grid');
+  grid.innerHTML = '';
+  Object.entries(sensors).forEach(([key,s])=>{
+    const c = document.createElement('div');
+    c.className = 'ai-card';
+    c.innerHTML = `<h3>${s.label}</h3><div class="live-val" id="val-${key}">${s.val}</div>`;
+    grid.appendChild(c);
+  });
+}
+function updateSensor(key, val, cls=''){
+  const el = document.getElementById('val-'+key);
+  if(!el) return;
+  el.innerText = val;
+  el.className = 'live-val'+(cls?' '+cls:'');
+}
+
+// USGS NEARBY EARTHQUAKES
+async function fetchEarthquakes(){
+  try{
+    // Query USGS within 800km of user
+    const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${userLat}&longitude=${userLon}&maxradius=8&minmagnitude=2.0&orderby=time&limit=20`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const quakes = data.features;
+
+    document.getElementById('eqLocationLabel').innerText = `📍 Showing earthquakes within 800km of ${userCity}`;
+
+    // TABLE
+    const tbody = document.getElementById('eqTableBody');
+    if(quakes.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5" style="color:#1f6f43;padding:12px;">✅ No significant earthquakes near ${userCity} recently.</td></tr>`;
+    } else {
+      tbody.innerHTML = quakes.map(q=>{
+        const mag   = q.properties.mag ? q.properties.mag.toFixed(1) : '--';
+        const place = q.properties.place || "Unknown";
+        const depth = q.geometry.coordinates[2].toFixed(1)+" km";
+        const time  = new Date(q.properties.time).toLocaleTimeString();
+        const dist  = getDistKm(userLat,userLon,q.geometry.coordinates[1],q.geometry.coordinates[0])+" km";
+        const cls   = mag>=5?'mag-high':mag>=3.5?'mag-mid':'mag-low';
+        return `<tr>
+          <td class="${cls}">M${mag}</td>
+          <td>${place}</td>
+          <td>${dist}</td>
+          <td>${depth}</td>
+          <td>${time}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ALERTS for significant nearby quakes
+    quakes.filter(q=>q.properties.mag>=4.5).slice(0,3).forEach(q=>{
+      const dist = getDistKm(userLat,userLon,q.geometry.coordinates[1],q.geometry.coordinates[0]);
+      addAlert('red', `🌍 M${q.properties.mag.toFixed(1)} Earthquake — ${q.properties.place} (${dist}km from you)`);
+    });
+
+    // SENSOR - nearest quake
+    if(quakes.length > 0){
+      const nearest = quakes[0];
+      const dist = getDistKm(userLat,userLon,nearest.geometry.coordinates[1],nearest.geometry.coordinates[0]);
+      const mag  = nearest.properties.mag.toFixed(1);
+      updateSensor('seismic', `M${mag} — ${dist}km away`, mag>=5?'danger':mag>=3.5?'warn':'');
+    } else {
+      updateSensor('seismic', 'None nearby', '');
+    }
+
+    // PULSE GRID
+    buildPulseGrid(quakes);
+
+    return quakes.filter(q=>q.properties.mag>=2.5).length;
+  } catch(e){ console.error("USGS error",e); return 0; }
+}
+
+// PULSE GRID
+function buildPulseGrid(quakes){
+  const grid = document.getElementById('eqPulseGrid');
+  grid.innerHTML = '';
+  const tooltip = document.getElementById('eqTooltip');
+
+  // Fill 20 cells — real quakes first, then safe cells
+  for(let i=0;i<20;i++){
+    const cell = document.createElement('div');
+    cell.className = 'eq-pulse-cell';
+
+    if(i < quakes.length){
+      const q   = quakes[i];
+      const mag = q.properties.mag || 0;
+      const dist= getDistKm(userLat,userLon,q.geometry.coordinates[1],q.geometry.coordinates[0]);
+      const place = (q.properties.place || "Unknown").substring(0,20);
+      const time  = new Date(q.properties.time).toLocaleTimeString();
+
+      let cls = mag>=5?'mag-crit':mag>=4?'mag-high':mag>=3?'mag-mid':'mag-low';
+      cell.className = 'eq-pulse-cell '+cls;
+      cell.innerHTML = `
+        <div class="pulse-ring"></div>
+        <div class="cell-mag">M${mag.toFixed(1)}</div>
+        <div class="cell-place">${dist}km</div>`;
+
+      // Tooltip
+      cell.addEventListener('mousemove', e=>{
+        tooltip.style.display='block';
+        tooltip.style.left=(e.clientX+12)+'px';
+        tooltip.style.top=(e.clientY+12)+'px';
+        tooltip.innerHTML=`<b>M${mag.toFixed(1)}</b><br>${place}<br>Depth: ${q.geometry.coordinates[2].toFixed(1)}km<br>Distance: ${dist}km<br>${time}`;
+      });
+      cell.addEventListener('mouseleave',()=>tooltip.style.display='none');
+
+    } else {
+      cell.className = 'eq-pulse-cell safe';
+      cell.innerHTML = `<div class="cell-mag" style="font-size:13px;">✅</div><div class="cell-place">Safe</div>`;
+    }
+    grid.appendChild(cell);
+  }
+}
+
+// NOAA TSUNAMI
+async function fetchTsunami(){
+  const panel = document.getElementById('tsunamiPanel');
+  try{
+    const res  = await fetch('https://api.allorigins.win/get?url='+encodeURIComponent('https://www.tsunami.gov/events/xml/PHEBrss.xml'));
+    const data = await res.json();
+    const xml  = new DOMParser().parseFromString(data.contents,'text/xml');
+    const items= xml.querySelectorAll('item');
+
+    if(!items || items.length===0){
+      panel.innerHTML=`<h3>🌊 Tsunami Status</h3><p class="tsunami-safe">✅ No active tsunami warnings worldwide.</p><p style="color:#aaa;font-size:12px;margin-top:8px;">Source: NOAA Tsunami Warning Center</p>`;
+    } else {
+      // Check if any warning mentions user's region
+      let html=`<h3>🌊 Active Tsunami Alerts</h3>`;
+      items.forEach(item=>{
+        const title=item.querySelector('title')?.textContent||"Alert";
+        const desc =item.querySelector('description')?.textContent||"";
+        html+=`<div style="margin-bottom:12px;"><p class="tsunami-warn">⚠️ ${title}</p><p style="color:#aaa;font-size:13px;">${desc}</p></div>`;
+        addAlert('red',`🌊 Tsunami Alert: ${title}`);
+      });
+      html+=`<p style="color:#aaa;font-size:12px;margin-top:10px;">Source: NOAA Tsunami Warning Center</p>`;
+      panel.innerHTML=html;
+    }
+  } catch(e){
+    panel.innerHTML=`<h3>🌊 Tsunami Status</h3><p class="tsunami-safe">✅ No active tsunami warnings.</p><p style="color:#aaa;font-size:12px;">Source: NOAA</p>`;
+  }
+}
+
+// OWM WEATHER ALERTS (location based)
+async function fetchWeatherAlerts(){
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${userLat}&lon=${userLon}&appid=${OWM_KEY}&units=metric`);
+    const d   = await res.json();
+    const main= d.weather[0].main;
+    const desc= d.weather[0].description;
+    const wind= d.wind.speed;
+    const rain= d.rain?d.rain['1h']||0:0;
+    const temp= d.main.temp;
+
+    updateSensor('temp',  temp.toFixed(1)+"°C", temp>=40?'danger':temp>=35?'warn':'');
+    updateSensor('wind',  wind+" m/s",           wind>=10?'danger':wind>=5?'warn':'');
+    updateSensor('rain',  rain>0?rain+"mm/hr":"None");
+    updateSensor('humid', d.main.humidity+"%");
+    updateSensor('city',  userCity);
+
+    let storm=0, flood=0;
+    if(main==="Thunderstorm"){ addAlert('red',   `⛈️ Thunderstorm in ${userCity} — ${desc}`); storm++; }
+    if(main==="Rain"||main==="Drizzle"){ addAlert('brown',`🌧️ Rain in ${userCity} — ${desc}`); flood++; }
+    if(wind>10){ addAlert('brown',`💨 Strong winds in ${userCity}: ${wind} m/s`); storm++; }
+    if(rain>5){  addAlert('red',  `🌊 Heavy rain in ${userCity}: ${rain}mm/hr — Flood risk`); flood++; }
+    if(temp>40){ addAlert('red',  `🔥 Extreme heat in ${userCity}: ${temp.toFixed(1)}°C`); }
+
+    return {storm, flood};
+  } catch(e){ return {storm:0,flood:0}; }
+}
+
+// GLOBAL DISASTER FEED (USGS recent significant worldwide)
+async function fetchGlobalFeed(){
+  try{
+    const res  = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson');
+    const data = await res.json();
+    const feed = document.getElementById('disasterFeed');
+    feed.innerHTML = '';
+
+    if(data.features.length===0){
+      feed.innerHTML='<p style="color:#1f6f43;padding:10px;">✅ No significant global disasters this week.</p>';
+      return;
+    }
+
+    data.features.forEach(q=>{
+      const mag   = q.properties.mag.toFixed(1);
+      const place = q.properties.place||"Unknown";
+      const time  = new Date(q.properties.time).toLocaleString();
+      const type  = q.properties.type||"earthquake";
+      const alert = q.properties.alert||"green";
+      const dotCls= alert==='red'?'red':alert==='orange'?'brown':'green';
+      const icon  = type==='earthquake'?'🌍':type==='quarry blast'?'💥':'🌍';
+
+      const item = document.createElement('div');
+      item.className = 'feed-item';
+      item.innerHTML = `
+        <div class="feed-dot ${dotCls}"></div>
+        <div>
+          <div class="feed-title">${icon} M${mag} — ${place}</div>
+          <div class="feed-sub">${time} · Alert: ${alert||'none'} · ${type}</div>
+        </div>`;
+      feed.appendChild(item);
+
+      // Add to alerts if high
+      if(mag>=6.0) addAlert('red', `🌍 Significant: M${mag} — ${place}`);
+    });
+  } catch(e){ console.error("Global feed error",e); }
+}
+
+// MAIN
+async function fetchAll(){
+  const eqCount = await fetchEarthquakes();
+  const {storm,flood} = await fetchWeatherAlerts();
+  await fetchTsunami();
+  await fetchGlobalFeed();
+  pushChart(eqCount, storm, flood);
+}
+
+function init(){
+  buildSensorCards();
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      userLat  = pos.coords.latitude;
+      userLon  = pos.coords.longitude;
+      // Get city name
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${userLat}&lon=${userLon}&appid=${OWM_KEY}`)
+        .then(r=>r.json()).then(d=>{ userCity=d.name; fetchAll(); }).catch(()=>fetchAll());
+    }, ()=>fetchAll());
+  } else fetchAll();
+}
+
+init();
+setInterval(fetchAll, 3*60*1000);
+</script>
+</body>
+</html>

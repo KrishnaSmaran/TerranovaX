@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup | TerranovaX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+
+body{
+background:
+radial-gradient(circle at 20% 30%, rgba(31,111,67,0.25), transparent 40%),
+radial-gradient(circle at 80% 60%, rgba(122,31,43,0.25), transparent 40%),
+#050807;
+color:#d2d8d2;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+padding:40px 20px;
+overflow-x:hidden;
+}
+
+body::before{
+content:"";position:fixed;width:100%;height:100%;
+background:
+radial-gradient(circle at 20% 30%, rgba(31,111,67,0.1), transparent 40%),
+radial-gradient(circle at 80% 70%, rgba(122,31,43,0.1), transparent 40%);
+z-index:-1;animation:bgMove 10s infinite alternate;
+}
+@keyframes bgMove{0%{background-position:0% 0%}100%{background-position:100% 100%}}
+
+.logo{color:#1f6f43;font-size:22px;font-weight:700;margin-bottom:40px;letter-spacing:1px;}
+
+.progress-wrapper{width:100%;max-width:520px;margin-bottom:10px;}
+.progress-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1f6f43,#7a1f2b);border-radius:10px;transition:width 0.5s ease;}
+.progress-text{font-size:12px;color:#555;text-align:right;margin-top:6px;}
+
+.card{
+width:100%;max-width:520px;
+background:rgba(255,255,255,0.03);
+backdrop-filter:blur(10px);
+border-radius:14px;
+border:1px solid rgba(255,255,255,0.05);
+padding:40px;margin-top:10px;
+}
+
+.step{display:none;}
+.step.active{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.step-label{font-size:12px;color:#1f6f43;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;}
+.step h2{font-size:26px;color:white;margin-bottom:8px;}
+.step p{color:#9aa29a;font-size:14px;line-height:1.7;margin-bottom:28px;}
+
+.input-group{position:relative;margin-bottom:24px;}
+.input-group input{
+width:100%;padding:14px 10px;
+background:transparent;border:none;outline:none;
+color:white;font-size:14px;border-bottom:1px solid #444;
+font-family:'Inter',sans-serif;
+}
+.input-group span{position:absolute;bottom:0;left:0;width:0%;height:2px;background:#1f6f43;transition:0.3s;}
+.input-group input:focus + span{width:100%;}
+
+/* LOCATION BUTTON */
+.btn-location{
+width:100%;padding:16px;
+border:1px solid #1f6f43;
+border-radius:8px;
+background:rgba(31,111,67,0.08);
+color:#1f6f43;
+font-size:15px;font-weight:600;
+cursor:pointer;transition:0.3s;
+display:flex;align-items:center;justify-content:center;gap:10px;
+font-family:'Inter',sans-serif;
+margin-bottom:14px;
+}
+.btn-location:hover{background:rgba(31,111,67,0.2);box-shadow:0 0 20px rgba(31,111,67,0.3);}
+.btn-location:disabled{opacity:0.5;cursor:not-allowed;}
+
+.location-result{
+padding:12px 16px;
+background:rgba(31,111,67,0.1);
+border:1px solid rgba(31,111,67,0.2);
+border-radius:8px;
+font-size:14px;
+color:#4caf50;
+margin-bottom:20px;
+display:none;
+}
+
+.location-skip{
+text-align:center;
+font-size:12px;
+color:#555;
+cursor:pointer;
+margin-bottom:20px;
+transition:0.3s;
+}
+.location-skip:hover{color:#7a1f2b;}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;}
+.chip{
+padding:9px 18px;border-radius:20px;
+border:1px solid #333;color:#9aa29a;
+font-size:13px;cursor:pointer;transition:0.3s;user-select:none;
+}
+.chip:hover{border-color:#1f6f43;color:#1f6f43;}
+.chip.selected{background:rgba(31,111,67,0.15);border-color:#1f6f43;color:#1f6f43;}
+
+.toggle-options{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;}
+.toggle-option{
+display:flex;align-items:center;justify-content:space-between;
+padding:14px 18px;border-radius:10px;border:1px solid #222;
+cursor:pointer;transition:0.3s;
+}
+.toggle-option:hover{border-color:#1f6f43;}
+.toggle-option.selected{border-color:#1f6f43;background:rgba(31,111,67,0.08);}
+.toggle-option .opt-label{font-size:14px;color:#c9d1c8;}
+.toggle-option .opt-desc{font-size:12px;color:#555;margin-top:2px;}
+.toggle-dot{width:18px;height:18px;border-radius:50%;border:2px solid #333;transition:0.3s;flex-shrink:0;}
+.toggle-option.selected .toggle-dot{background:#1f6f43;border-color:#1f6f43;}
+
+button.btn-next{
+width:100%;padding:14px;border:none;border-radius:8px;
+background:#1f6f43;color:white;font-size:15px;font-weight:600;
+cursor:pointer;transition:0.3s;font-family:'Inter',sans-serif;
+}
+button.btn-next:hover{box-shadow:0 0 20px rgba(31,111,67,0.5);}
+button.btn-next:disabled{opacity:0.5;cursor:not-allowed;}
+
+.btn-back{
+width:100%;padding:12px;border:1px solid #333;border-radius:8px;
+background:transparent;color:#888;font-size:13px;
+cursor:pointer;transition:0.3s;margin-top:10px;font-family:'Inter',sans-serif;
+}
+.btn-back:hover{border-color:#7a1f2b;color:#7a1f2b;}
+
+.error-msg{color:#ff4d4d;font-size:12px;margin-bottom:12px;display:none;}
+
+.success-screen{display:none;text-align:center;animation:fadeIn 0.4s ease;}
+.success-screen .big-icon{font-size:60px;margin-bottom:20px;}
+.success-screen h2{font-size:28px;color:white;margin-bottom:10px;}
+.success-screen p{color:#9aa29a;font-size:14px;line-height:1.7;margin-bottom:30px;}
+
+@media(max-width:600px){.card{padding:28px 20px;}.step h2{font-size:22px;}}
+</style>
+</head>
+<body>
+
+<div class="logo">TerranovaX</div>
+
+<div class="progress-wrapper">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:20%"></div>
+  </div>
+  <div class="progress-text" id="progressText">Step 1 of 5</div>
+</div>
+
+<div class="card">
+
+  <!-- STEP 1: NAME -->
+  <div class="step active" id="step1">
+    <div class="step-label">STEP 1 — IDENTITY</div>
+    <h2>What should we call you?</h2>
+    <p>Confirm or update your display name. This is how you'll appear on TerranovaX.</p>
+    <div class="error-msg" id="err1"></div>
+    <div class="input-group">
+      <input type="text" id="inputName" placeholder="Your display name">
+      <span></span>
+    </div>
+    <button class="btn-next" onclick="nextStep(1)">Continue →</button>
+  </div>
+
+  <!-- STEP 2: LOCATION -->
+  <div class="step" id="step2">
+    <div class="step-label">STEP 2 — LOCATION</div>
+    <h2>Allow location access</h2>
+    <p>We'll use your location to show local disaster alerts, live weather, and risk zones near you.</p>
+    <div class="error-msg" id="err2"></div>
+
+    <button class="btn-location" id="btnDetect" onclick="detectLocation()">
+      📍 Detect My Location
+    </button>
+
+    <div class="location-result" id="locationResult"></div>
+
+    <div class="location-skip" onclick="skipLocation()">Skip for now →</div>
+
+    <button class="btn-next" id="btnLocNext" onclick="nextStep(2)" disabled>Continue →</button>
+    <button class="btn-back" onclick="prevStep(2)">← Back</button>
+  </div>
+
+  <!-- STEP 3: REGION -->
+  <div class="step" id="step3">
+    <div class="step-label">STEP 3 — REGION FOCUS</div>
+    <h2>Which region to monitor?</h2>
+    <p>Choose your primary area of interest for alerts and data.</p>
+    <div class="toggle-options" id="regionOptions">
+      <div class="toggle-option selected" onclick="selectRegion(this,'India')">
+        <div><div class="opt-label">🇮🇳 India</div><div class="opt-desc">Focus on Indian states and disaster zones</div></div>
+        <div class="toggle-dot"></div>
+      </div>
+      <div class="toggle-option" onclick="selectRegion(this,'South Asia')">
+        <div><div class="opt-label">🌏 South Asia</div><div class="opt-desc">India, Pakistan, Bangladesh, Sri Lanka</div></div>
+        <div class="toggle-dot"></div>
+      </div>
+      <div class="toggle-option" onclick="selectRegion(this,'Global')">
+        <div><div class="opt-label">🌍 Global</div><div class="opt-desc">Monitor disasters worldwide</div></div>
+        <div class="toggle-dot"></div>
+      </div>
+    </div>
+    <button class="btn-next" onclick="nextStep(3)">Continue →</button>
+    <button class="btn-back" onclick="prevStep(3)">← Back</button>
+  </div>
+
+  <!-- STEP 4: DISASTER PREFERENCES -->
+  <div class="step" id="step4">
+    <div class="step-label">STEP 4 — ALERT PREFERENCES</div>
+    <h2>What disasters concern you?</h2>
+    <p>Select all that apply. We'll prioritize these for your dashboard.</p>
+    <div class="chips" id="disasterChips">
+      <div class="chip selected" onclick="toggleChip(this)">🌊 Flood</div>
+      <div class="chip selected" onclick="toggleChip(this)">🌪️ Cyclone</div>
+      <div class="chip" onclick="toggleChip(this)">🌍 Earthquake</div>
+      <div class="chip" onclick="toggleChip(this)">🔥 Wildfire</div>
+      <div class="chip" onclick="toggleChip(this)">☀️ Heatwave</div>
+      <div class="chip" onclick="toggleChip(this)">⛈️ Thunderstorm</div>
+      <div class="chip" onclick="toggleChip(this)">🌫️ Air Pollution</div>
+      <div class="chip" onclick="toggleChip(this)">🌊 Tsunami</div>
+    </div>
+    <button class="btn-next" onclick="nextStep(4)">Continue →</button>
+    <button class="btn-back" onclick="prevStep(4)">← Back</button>
+  </div>
+
+  <!-- STEP 5: NOTIFICATIONS -->
+  <div class="step" id="step5">
+    <div class="step-label">STEP 5 — NOTIFICATIONS</div>
+    <h2>How do you want alerts?</h2>
+    <p>Choose how TerranovaX keeps you informed about risks in your area.</p>
+    <div class="toggle-options">
+      <div class="toggle-option selected" id="notifEmail" onclick="toggleNotif('notifEmail')">
+        <div><div class="opt-label">📧 Email Alerts</div><div class="opt-desc">Get critical alerts directly to your inbox</div></div>
+        <div class="toggle-dot"></div>
+      </div>
+      <div class="toggle-option" id="notifDashboard" onclick="toggleNotif('notifDashboard')">
+        <div><div class="opt-label">📊 Dashboard Only</div><div class="opt-desc">View alerts only when you visit TerranovaX</div></div>
+        <div class="toggle-dot"></div>
+      </div>
+    </div>
+    <button class="btn-next" onclick="completeOnboarding()">🚀 Launch TerranovaX</button>
+    <button class="btn-back" onclick="prevStep(5)">← Back</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="big-icon">🌍</div>
+    <h2>You're all set!</h2>
+    <p>TerranovaX is now personalized for you.<br>Stay safe and stay informed.</p>
+    <button class="btn-next" id="enterBtn">Enter TerranovaX →</button>
+  </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCZbIP44acM71ZW7eCblfNrLIE3HRptUgE",
+    authDomain:        "magnificent-temples.firebaseapp.com",
+    projectId:         "magnificent-temples",
+    storageBucket:     "magnificent-temples.firebasestorage.app",
+    messagingSenderId: "836647714930",
+    appId:             "1:836647714930:web:60ba09e18b183aae52c2eb"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  let currentUser = null;
+
+  onAuthStateChanged(auth, (user) => {
+    if(!user){ window.location.href = "login.html"; return; }
+    currentUser = user;
+    const nameInput = document.getElementById("inputName");
+    if(user.displayName) nameInput.value = user.displayName;
+  });
+
+  window.completeOnboarding = async function() {
+    const name       = document.getElementById("inputName").value.trim();
+    const city       = window.detectedCity    || "";
+    const region     = window.selectedRegion  || "India";
+    const disasters  = window.selectedDisasters || [];
+    const notifEmail     = document.getElementById("notifEmail").classList.contains("selected");
+    const notifDashboard = document.getElementById("notifDashboard").classList.contains("selected");
+
+    try {
+      await updateProfile(currentUser, { displayName: name });
+
+      await setDoc(doc(db, "users", currentUser.uid), {
+        name,
+        city,
+        region,
+        disasterPreferences: disasters,
+        notifications: { email: notifEmail, dashboard: notifDashboard },
+        onboarded:  true,
+        joinedDate: new Date().toISOString()
+      });
+
+      // Show success
+      document.querySelectorAll(".step").forEach(s => s.style.display = "none");
+      document.getElementById("progressFill").style.width = "100%";
+      document.getElementById("progressText").innerText   = "Complete! 🎉";
+      document.getElementById("successScreen").style.display = "block";
+
+      // Enter button redirect
+      document.getElementById("enterBtn").onclick = function() {
+        window.location.href = "home.html";
+      };
+
+    } catch(err) {
+      console.error(err);
+      alert("Something went wrong. Please try again.");
+    }
+  }
+</script>
+
+<script>
+let currentStep         = 1;
+const totalSteps        = 5;
+window.selectedRegion   = "India";
+window.selectedDisasters= [];
+window.detectedCity     = "";
+
+// ── DETECT LOCATION ──
+function detectLocation() {
+  const btn    = document.getElementById("btnDetect");
+  const result = document.getElementById("locationResult");
+  const next   = document.getElementById("btnLocNext");
+
+  btn.disabled    = true;
+  btn.textContent = "📍 Detecting...";
+
+  if(!navigator.geolocation) {
+    showErr("err2", "Geolocation not supported on this device.");
+    btn.disabled    = false;
+    btn.textContent = "📍 Detect My Location";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      try {
+        // Reverse geocode using free API
+        const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+        const data = await res.json();
+
+        const city  = data.address.city
+                   || data.address.town
+                   || data.address.village
+                   || data.address.state_district
+                   || "Your location";
+
+        const state   = data.address.state   || "";
+        const country = data.address.country || "";
+
+        window.detectedCity = city;
+
+        result.style.display = "block";
+        result.innerHTML     = `✅ Detected: <strong>${city}${state ? ", " + state : ""}${country ? ", " + country : ""}</strong>`;
+
+        btn.textContent = "📍 Location Detected!";
+        next.disabled   = false;
+
+      } catch(e) {
+        showErr("err2", "Could not get city name. Try again.");
+        btn.disabled    = false;
+        btn.textContent = "📍 Detect My Location";
+      }
+    },
+    (err) => {
+      showErr("err2", "Location access denied. Please allow location or skip.");
+      btn.disabled    = false;
+      btn.textContent = "📍 Detect My Location";
+    }
+  );
+}
+
+// ── SKIP LOCATION ──
+function skipLocation() {
+  window.detectedCity = "";
+  document.getElementById("locationResult").style.display = "none";
+  document.getElementById("btnLocNext").disabled = false;
+  nextStep(2);
+}
+
+// ── NEXT STEP ──
+function nextStep(step) {
+  if(step === 1) {
+    const name = document.getElementById("inputName").value.trim();
+    if(name.length < 2) return showErr("err1", "Please enter your name!");
+  }
+
+  document.getElementById("step" + step).classList.remove("active");
+  currentStep = step + 1;
+  document.getElementById("step" + currentStep).classList.add("active");
+  updateProgress();
+}
+
+// ── PREV STEP ──
+function prevStep(step) {
+  document.getElementById("step" + step).classList.remove("active");
+  currentStep = step - 1;
+  document.getElementById("step" + currentStep).classList.add("active");
+  updateProgress();
+}
+
+// ── PROGRESS ──
+function updateProgress() {
+  const pct = (currentStep / totalSteps) * 100;
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressText").innerText   = "Step " + currentStep + " of " + totalSteps;
+}
+
+// ── REGION SELECT ──
+function selectRegion(el, region) {
+  document.querySelectorAll("#regionOptions .toggle-option").forEach(o => o.classList.remove("selected"));
+  el.classList.add("selected");
+  window.selectedRegion = region;
+}
+
+// ── CHIP TOGGLE ──
+function toggleChip(el) {
+  el.classList.toggle("selected");
+  window.selectedDisasters = [];
+  document.querySelectorAll("#disasterChips .chip.selected").forEach(c => {
+    window.selectedDisasters.push(c.innerText.replace(/[^\w\s]/g,"").trim());
+  });
+}
+
+// ── NOTIF TOGGLE ──
+function toggleNotif(id) {
+  document.getElementById(id).classList.toggle("selected");
+}
+
+// ── SHOW ERROR ──
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.innerText = msg;
+  el.style.display = "block";
+  setTimeout(() => el.style.display = "none", 3000);
+}
+</script>
+
+</body>
+</html>

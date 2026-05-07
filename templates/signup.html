@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account | TerranovaX</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+
+body{
+background:
+radial-gradient(circle at 20% 30%, rgba(31,111,67,0.25), transparent 40%),
+radial-gradient(circle at 80% 60%, rgba(122,31,43,0.25), transparent 40%),
+#050807;
+color:#d2d8d2;
+height:100vh;
+display:flex;
+}
+
+.wrapper{display:flex;width:100%;}
+
+/* LEFT PANEL */
+.left{
+flex:1;display:flex;flex-direction:column;
+justify-content:center;padding:60px;
+}
+.left h1{font-size:42px;margin-bottom:20px;}
+.left span:nth-child(1){color:#7a1f2b;}
+.left span:nth-child(2){color:#1f6f43;}
+.left p{color:#9aa29a;max-width:420px;line-height:1.7;}
+
+/* RIGHT PANEL */
+.right{flex:1;display:flex;justify-content:center;align-items:center;}
+
+/* FORM BOX */
+.form-box{
+width:100%;max-width:380px;padding:35px;
+background:rgba(255,255,255,0.03);
+backdrop-filter:blur(10px);
+border-radius:12px;
+border:1px solid rgba(255,255,255,0.05);
+}
+
+/* INPUT GROUP */
+.input-group{position:relative;margin-bottom:20px;}
+.input-group input{
+width:100%;padding:14px 10px;
+background:transparent;border:none;outline:none;
+color:white;font-size:14px;border-bottom:1px solid #444;
+}
+.input-group span{
+position:absolute;bottom:0;left:0;
+width:0%;height:2px;background:#1f6f43;transition:0.3s;
+}
+.input-group input:focus + span{width:100%;}
+
+/* PASSWORD TOGGLE */
+.toggle{position:absolute;right:0;top:10px;cursor:pointer;font-size:12px;color:#888;}
+
+/* STRENGTH */
+.strength{font-size:12px;margin-top:5px;}
+
+/* BUTTON */
+button{
+width:100%;padding:14px;margin-top:10px;
+border:none;border-radius:8px;
+background:#1f6f43;color:white;
+font-weight:600;cursor:pointer;transition:0.3s;
+}
+button:hover{box-shadow:0 0 15px rgba(31,111,67,0.6);}
+button:disabled{opacity:0.6;cursor:not-allowed;}
+
+/* FOOTER */
+.footer{margin-top:15px;font-size:13px;text-align:center;}
+.footer a{color:#7a1f2b;text-decoration:none;}
+
+/* SUCCESS */
+.success{
+display:none;text-align:center;
+background:rgba(31,111,67,0.2);
+color:#4caf50;
+padding:12px;border-radius:8px;margin-top:15px;
+font-size:13px;
+}
+
+/* ERROR */
+.error{
+color:#ff4d4d;font-size:12px;
+display:none;margin-bottom:10px;
+background:rgba(255,77,77,0.1);
+padding:10px;border-radius:6px;
+}
+
+/* OTP SECTION */
+.otp-section{display:none;margin-top:10px;}
+.otp-section p{font-size:13px;color:#9aa29a;margin-bottom:15px;text-align:center;}
+.otp-section input{
+width:100%;padding:14px 10px;
+background:transparent;border:none;outline:none;
+color:white;font-size:20px;letter-spacing:8px;
+text-align:center;border-bottom:1px solid #444;
+}
+.otp-timer{text-align:center;font-size:12px;color:#888;margin-top:8px;}
+.otp-timer span{color:#7a1f2b;}
+
+/* ── GOOGLE BUTTON (only new css added) ── */
+.divider{
+display:flex;align-items:center;gap:10px;
+margin:18px 0;color:#444;font-size:12px;
+}
+.divider::before,.divider::after{
+content:"";flex:1;height:1px;background:#222;
+}
+.btn-google{
+width:100%;padding:12px;margin-top:0;
+border:1px solid #333;border-radius:8px;
+background:transparent;color:#d2d8d2;
+font-size:14px;font-weight:500;
+cursor:pointer;transition:0.3s;
+display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-google:hover{border-color:#1f6f43;background:rgba(31,111,67,0.08);}
+.btn-google img{width:18px;height:18px;}
+
+/* MOBILE */
+@media(max-width:900px){
+.wrapper{flex-direction:column;}
+.left{padding:30px;text-align:center;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<!-- LEFT INFO -->
+<div class="left">
+  <h1>
+    <span>Join</span> <span>TerranovaX</span>
+  </h1>
+  <p>
+    Get real-time disaster intelligence, predictive alerts,
+    and advanced environmental insights powered by AI.
+  </p>
+</div>
+
+<!-- RIGHT FORM -->
+<div class="right">
+  <div class="form-box">
+
+    <!-- STEP 1: SIGNUP FORM -->
+    <form id="form">
+      <div class="error" id="error"></div>
+
+      <div class="input-group">
+        <input type="text" id="name" placeholder="Full Name">
+        <span></span>
+      </div>
+
+      <div class="input-group">
+        <input type="email" id="email" placeholder="Email">
+        <span></span>
+      </div>
+
+      <div class="input-group">
+        <input type="password" id="password" placeholder="Password">
+        <span></span>
+        <div class="toggle" onclick="togglePass('password')">Show</div>
+        <div class="strength" id="strength"></div>
+      </div>
+
+      <div class="input-group">
+        <input type="password" id="repassword" placeholder="Confirm Password">
+        <span></span>
+        <div class="toggle" onclick="togglePass('repassword')">Show</div>
+      </div>
+
+      <button id="sendOtpBtn" type="submit">Send OTP</button>
+    </form>
+
+    <!-- DIVIDER -->
+    <div class="divider">or</div>
+
+    <!-- GOOGLE SIGN IN -->
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Continue with Google
+    </button>
+
+    <!-- STEP 2: OTP VERIFICATION -->
+    <div class="otp-section" id="otpSection">
+      <div class="error" id="otpError"></div>
+      <p>📧 OTP sent to your Gmail! Check your inbox.</p>
+      <div class="input-group">
+        <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6">
+      </div>
+      <div class="otp-timer">Resend OTP in <span id="timer">60</span>s</div>
+      <button id="verifyBtn" onclick="verifyOTP()">Verify & Create Account</button>
+      <button id="resendBtn" onclick="resendOTP()" style="display:none;background:transparent;border:1px solid #1f6f43;color:#1f6f43;margin-top:10px;">Resend OTP</button>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success" id="success">
+      ✅ Account created successfully! Redirecting...
+    </div>
+
+    <div class="footer">
+      Already have an account? <a href="login.html">Login</a>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZbIP44acM71ZW7eCblfNrLIE3HRptUgE",
+    authDomain: "magnificent-temples.firebaseapp.com",
+    projectId: "magnificent-temples",
+    storageBucket: "magnificent-temples.firebasestorage.app",
+    messagingSenderId: "836647714930",
+    appId: "1:836647714930:web:60ba09e18b183aae52c2eb"
+  };
+
+  const app      = initializeApp(firebaseConfig);
+  const auth     = getAuth(app);
+  const db       = getFirestore(app);
+  // ✅ MAKE FIREBASE ACCESSIBLE OUTSIDE MODULE
+window.db = db;
+window.setDoc = setDoc;
+window.doc = doc;
+window.serverTimestamp = serverTimestamp;
+  const provider = new GoogleAuthProvider();
+
+  window.firebaseAuth                    = auth;
+  window.createUserWithEmailAndPassword  = createUserWithEmailAndPassword;
+  window.updateProfile                   = updateProfile;
+
+  // ── GOOGLE SIGN IN ──
+  window.signInWithGoogle = async function() {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user   = result.user;
+
+      // Check if first time
+ const userRef = window.doc(window.db, "tnx_users", user.uid);
+const userDoc = await getDoc(userRef);
+
+if(!userDoc.exists()) {
+  await window.setDoc(userRef, {
+    uid: user.uid,
+    name: user.displayName || "User",
+    email: user.email,
+    photoURL: user.photoURL || null,
+    contacts: [],
+    online: true,
+    lastSeen: window.serverTimestamp()
+  });
+
+  window.location.href = "onboarding.html";
+} else {
+  window.location.href = "home.html";
+}
+    } catch(err) {
+      console.error(err);
+    }
+  }
+</script>
+
+<script>
+const form       = document.getElementById("form");
+const error      = document.getElementById("error");
+const success    = document.getElementById("success");
+const password   = document.getElementById("password");
+const strength   = document.getElementById("strength");
+const otpSection = document.getElementById("otpSection");
+const otpError   = document.getElementById("otpError");
+const sendOtpBtn = document.getElementById("sendOtpBtn");
+
+let timerInterval;
+let currentEmail = "";
+let currentName  = "";
+let currentPass  = "";
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name   = document.getElementById("name").value.trim();
+  const email  = document.getElementById("email").value.trim();
+  const pass   = password.value;
+  const repass = document.getElementById("repassword").value;
+
+  if(name.length < 3)      return showError(error, "Enter a valid name");
+  if(!email.includes("@")) return showError(error, "Invalid email address");
+  if(pass.length < 6)      return showError(error, "Password must be at least 6 characters");
+  if(pass !== repass)      return showError(error, "Passwords do not match");
+
+  currentEmail = email;
+  currentName  = name;
+  currentPass  = pass;
+
+  sendOtpBtn.disabled    = true;
+  sendOtpBtn.textContent = "Sending OTP...";
+
+  try {
+    const res  = await fetch("http://127.0.0.1:5000/send-otp", {
+      method:  "POST",
+      headers: {"Content-Type": "application/json"},
+      body:    JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(res.ok){
+      form.style.display       = "none";
+      otpSection.style.display = "block";
+      startTimer(60);
+    } else {
+      showError(error, data.error || "Failed to send OTP");
+      sendOtpBtn.disabled    = false;
+      sendOtpBtn.textContent = "Send OTP";
+    }
+  } catch(err) {
+    showError(error, "Cannot connect to server. Make sure app.py is running!");
+    sendOtpBtn.disabled    = false;
+    sendOtpBtn.textContent = "Send OTP";
+  }
+});
+
+window.verifyOTP = async function() {
+  const otp = document.getElementById("otpInput").value.trim();
+  if(otp.length !== 6) return showError(otpError, "Enter a valid 6-digit OTP");
+
+  document.getElementById("verifyBtn").disabled    = true;
+  document.getElementById("verifyBtn").textContent = "Verifying...";
+
+  try {
+    const res  = await fetch("http://127.0.0.1:5000/verify-otp", {
+      method:  "POST",
+      headers: {"Content-Type": "application/json"},
+      body:    JSON.stringify({ email: currentEmail, otp })
+    });
+    const data = await res.json();
+    if(res.ok){
+      try {
+        const userCredential = await window.createUserWithEmailAndPassword(window.firebaseAuth, currentEmail, currentPass);
+        await window.updateProfile(userCredential.user, { displayName: currentName });
+        const user = userCredential.user;
+        await window.setDoc(
+  window.doc(window.db, "tnx_users", user.uid),
+  {
+    uid: user.uid,
+    name: currentName,
+    email: currentEmail,
+    photoURL: user.photoURL || null,
+    contacts: [],
+    online: true,
+    lastSeen: window.serverTimestamp()
+  }
+);
+        clearInterval(timerInterval);
+        otpSection.style.display = "none";
+        success.style.display    = "block";
+        setTimeout(() => { window.location.href = "onboarding.html"; }, 2000);
+      } catch(firebaseErr) {
+        showError(otpError, getFirebaseError(firebaseErr.code));
+        document.getElementById("verifyBtn").disabled    = false;
+        document.getElementById("verifyBtn").textContent = "Verify & Create Account";
+      }
+    } else {
+      showError(otpError, "Invalid OTP. Please try again.");
+      document.getElementById("verifyBtn").disabled    = false;
+      document.getElementById("verifyBtn").textContent = "Verify & Create Account";
+    }
+  } catch(err) {
+    showError(otpError, "Server error. Make sure app.py is running!");
+    document.getElementById("verifyBtn").disabled    = false;
+    document.getElementById("verifyBtn").textContent = "Verify & Create Account";
+  }
+}
+
+window.resendOTP = async function() {
+  document.getElementById("resendBtn").style.display = "none";
+  document.querySelector(".otp-timer").style.display = "block";
+  try {
+    await fetch("http://127.0.0.1:5000/send-otp", {
+      method:  "POST",
+      headers: {"Content-Type": "application/json"},
+      body:    JSON.stringify({ email: currentEmail })
+    });
+    startTimer(60);
+    otpError.style.display = "none";
+  } catch(err) { showError(otpError, "Failed to resend OTP."); }
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  let remaining = seconds;
+  document.getElementById("timer").textContent       = remaining;
+  document.getElementById("resendBtn").style.display = "none";
+  timerInterval = setInterval(() => {
+    remaining--;
+    document.getElementById("timer").textContent = remaining;
+    if(remaining <= 0){
+      clearInterval(timerInterval);
+      document.getElementById("resendBtn").style.display  = "block";
+      document.querySelector(".otp-timer").style.display  = "none";
+    }
+  }, 1000);
+}
+
+function showError(el, msg) { el.textContent = msg; el.style.display = "block"; }
+
+function getFirebaseError(code) {
+  const msgs = {
+    "auth/email-already-in-use":   "This email is already registered.",
+    "auth/weak-password":          "Password is too weak.",
+    "auth/invalid-email":          "Invalid email address.",
+    "auth/network-request-failed": "Network error. Check your connection."
+  };
+  return msgs[code] || "Something went wrong. Please try again.";
+}
+
+function togglePass(id) {
+  const input = document.getElementById(id);
+  input.type  = input.type === "password" ? "text" : "password";
+}
+
+password.addEventListener("input", () => {
+  const val = password.value;
+  if(val.length < 6){ strength.innerText = "Weak"; strength.style.color = "red"; }
+  else if(val.length < 10){ strength.innerText = "Medium"; strength.style.color = "orange"; }
+  else { strength.innerText = "Strong"; strength.style.color = "lightgreen"; }
+});
+</script>
+
+</body>
+</html>

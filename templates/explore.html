@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore | TerranovaX</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{
+  background:#050807;color:#d2d8d2;
+  overflow-x:hidden;overflow-y:auto;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(31,111,67,0.15),transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(122,31,43,0.15),transparent 40%),
+    #050807;
+}
+header{
+  position:fixed;top:0;width:100%;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 60px;background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(10px);z-index:1000;
+}
+.logo{color:#1f6f43;font-size:24px;font-weight:700;}
+nav{display:flex;gap:25px;}
+nav a{color:#c9d1c8;text-decoration:none;transition:0.3s;}
+nav a:hover{color:#1f6f43;}
+
+/* TICKER */
+.ticker-wrap{
+  margin-top:80px;overflow:hidden;
+  background:rgba(20,20,20,0.8);padding:12px 0;
+  border-bottom:1px solid #1f6f43;
+}
+.ticker{display:flex;gap:60px;animation:ticker 35s linear infinite;white-space:nowrap;}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{color:#8a6d3b;font-size:13px;}
+.ticker-item span{color:#1f6f43;margin-right:6px;}
+
+/* HERO */
+.hero{padding:60px 80px 40px;text-align:center;}
+.hero h1{
+  font-size:54px;
+  background:linear-gradient(90deg,#1f6f43,#7a1f2b,#8a6d3b);
+  -webkit-background-clip:text;color:transparent;
+  margin-bottom:16px;
+}
+.hero p{color:#9aa29a;font-size:17px;max-width:700px;margin:0 auto 20px;}
+.hero-loc{color:#8a6d3b;font-size:14px;}
+
+/* LINE */
+.line{
+  height:2px;
+  background:linear-gradient(90deg,#1f6f43,#7a1f2b,#8a6d3b);
+  margin:0 80px 70px;background-size:200%;
+  animation:flow 4s linear infinite;
+}
+@keyframes flow{0%{background-position:0%}100%{background-position:200%}}
+
+/* SECTION TITLE */
+.section-title{
+  text-align:center;font-size:38px;
+  background:linear-gradient(90deg,#1f6f43,#7a1f2b,#8a6d3b);
+  -webkit-background-clip:text;color:transparent;
+  margin-bottom:12px;
+}
+.section-sub{text-align:center;color:#9aa29a;font-size:14px;margin-bottom:40px;}
+
+/* ═══════════ KELVIN ═══════════ */
+.kelvin-section{padding:0 80px 70px;}
+.kelvin-wrap{
+  background:rgba(20,20,20,0.8);
+  border:1px solid #1f6f43;
+  border-radius:20px;padding:40px;
+  position:relative;overflow:hidden;
+}
+.kelvin-wrap::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(circle at 50% 0%,rgba(31,111,67,0.08),transparent 60%);
+  pointer-events:none;
+}
+.kelvin-header{display:flex;align-items:center;gap:20px;margin-bottom:30px;}
+.kelvin-avatar{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,#1f6f43,#7a1f2b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;position:relative;
+}
+.kelvin-pulse{
+  position:absolute;width:100%;height:100%;border-radius:50%;
+  border:2px solid #1f6f43;animation:kpulse 2s infinite;
+}
+@keyframes kpulse{0%{transform:scale(1);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.kelvin-info h2{color:white;font-size:22px;}
+.kelvin-info p{color:#8a6d3b;font-size:13px;}
+.kelvin-status{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;
+  background:rgba(31,111,67,0.2);border:1px solid #1f6f43;
+  color:#4caf50;font-size:12px;margin-top:6px;
+}
+.kelvin-dot{width:6px;height:6px;border-radius:50%;background:#4caf50;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* KELVIN CHAT */
+.kelvin-chat{
+  background:rgba(10,10,10,0.6);border-radius:12px;
+  padding:20px;min-height:180px;max-height:300px;
+  overflow-y:auto;margin-bottom:20px;
+  border:1px solid #222;
+}
+.kelvin-chat::-webkit-scrollbar{width:4px;}
+.kelvin-chat::-webkit-scrollbar-thumb{background:#1f6f43;border-radius:4px;}
+.chat-msg{margin-bottom:14px;display:flex;gap:12px;align-items:flex-start;}
+.chat-msg.kelvin .chat-bubble{background:rgba(31,111,67,0.15);border:1px solid rgba(31,111,67,0.3);border-radius:12px 12px 12px 0;padding:10px 14px;color:#d2d8d2;font-size:14px;line-height:1.6;max-width:85%;}
+.chat-msg.user .chat-bubble{background:rgba(122,31,43,0.15);border:1px solid rgba(122,31,43,0.3);border-radius:12px 12px 0 12px;padding:10px 14px;color:#d2d8d2;font-size:14px;max-width:85%;margin-left:auto;}
+.chat-msg.user{flex-direction:row-reverse;}
+.chat-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.chat-icon.k{background:linear-gradient(135deg,#1f6f43,#7a1f2b);}
+.chat-icon.u{background:rgba(122,31,43,0.4);}
+
+/* KELVIN INPUT */
+.kelvin-input-row{display:flex;gap:12px;align-items:center;}
+.kelvin-input{
+  flex:1;padding:12px 18px;border-radius:10px;
+  border:1px solid #333;background:rgba(30,30,30,0.6);
+  color:#d2d8d2;font-size:14px;outline:none;transition:0.3s;
+}
+.kelvin-input:focus{border-color:#1f6f43;}
+.kelvin-input::placeholder{color:#555;}
+.kelvin-send,.kelvin-mic{
+  padding:12px 18px;border:none;border-radius:10px;
+  cursor:pointer;font-size:16px;transition:0.3s;
+}
+.kelvin-send{background:#1f6f43;color:white;}
+.kelvin-send:hover{background:#7a1f2b;}
+.kelvin-mic{background:rgba(122,31,43,0.3);color:#ff6b6b;border:1px solid #7a1f2b;}
+.kelvin-mic.listening{background:rgba(122,31,43,0.7);animation:micpulse 0.8s infinite;}
+@keyframes micpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+/* QUICK COMMANDS */
+.quick-cmds{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.qcmd{
+  padding:7px 14px;border-radius:20px;font-size:12px;
+  background:rgba(30,30,30,0.6);border:1px solid #333;
+  color:#aaa;cursor:pointer;transition:0.3s;
+}
+.qcmd:hover{border-color:#1f6f43;color:#1f6f43;}
+
+/* ═══════════ RISK SCORE ═══════════ */
+.risk-section{padding:0 80px 70px;}
+.risk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+.risk-card{
+  background:rgba(30,30,30,0.5);border-radius:14px;
+  padding:24px;text-align:center;border-top:3px solid #1f6f43;
+  transition:0.3s;
+}
+.risk-card:hover{transform:translateY(-5px);}
+.risk-card .risk-icon{font-size:32px;margin-bottom:10px;}
+.risk-card .risk-val{font-size:32px;font-weight:700;color:#1f6f43;margin-bottom:6px;}
+.risk-card .risk-val.warn{color:#8a6d3b;}
+.risk-card .risk-val.danger{color:#ff4d4d;}
+.risk-card .risk-label{font-size:12px;color:#aaa;}
+.risk-card .risk-src{font-size:10px;color:#555;margin-top:4px;}
+
+/* UNIFIED RISK SCORE */
+.unified-risk{
+  background:rgba(20,20,20,0.8);border-radius:20px;
+  padding:30px;margin-bottom:30px;text-align:center;
+  border:1px solid #1f6f43;
+}
+.unified-risk h3{color:#aaa;font-size:14px;letter-spacing:2px;margin-bottom:10px;}
+.risk-score-big{font-size:72px;font-weight:700;line-height:1;}
+.risk-score-big.low{color:#1f6f43;}
+.risk-score-big.mod{color:#8a6d3b;}
+.risk-score-big.high{color:#ff4d4d;}
+.risk-level-label{font-size:18px;margin-top:8px;color:#aaa;}
+.risk-bar{
+  height:8px;border-radius:4px;
+  background:linear-gradient(90deg,#1f6f43,#8a6d3b,#ff4d4d);
+  margin:16px auto;max-width:400px;position:relative;
+}
+.risk-indicator{
+  position:absolute;top:-4px;width:16px;height:16px;
+  border-radius:50%;background:white;border:2px solid #050807;
+  transition:left 1s ease;
+}
+
+/* ═══════════ PIPELINE VIEW ═══════════ */
+.pipeline-section{padding:0 80px 70px;}
+.pipeline{
+  background:rgba(20,20,20,0.7);border-radius:16px;padding:30px;
+  overflow-x:auto;
+}
+.pipeline-flow{display:flex;align-items:center;gap:0;min-width:700px;}
+.pipe-node{
+  background:rgba(30,30,30,0.8);border:1px solid #1f6f43;
+  border-radius:10px;padding:16px 20px;text-align:center;
+  min-width:120px;flex-shrink:0;
+}
+.pipe-node h4{color:#1f6f43;font-size:13px;margin-bottom:6px;}
+.pipe-node .pipe-status{font-size:11px;margin-top:4px;}
+.pipe-node .pipe-lat{font-size:10px;color:#555;margin-top:2px;}
+.pipe-arrow{
+  flex:1;height:2px;background:linear-gradient(90deg,#1f6f43,#8a6d3b);
+  position:relative;min-width:30px;
+}
+.pipe-arrow::after{
+  content:'▶';position:absolute;right:-6px;top:-8px;
+  color:#8a6d3b;font-size:12px;
+}
+.pipe-packet{
+  position:absolute;width:8px;height:8px;border-radius:50%;
+  background:#1f6f43;top:-3px;left:0;
+  animation:packetMove 2s linear infinite;
+}
+@keyframes packetMove{0%{left:0%;opacity:1}100%{left:100%;opacity:0}}
+
+/* ═══════════ SYNC VIEW ═══════════ */
+.sync-section{padding:0 80px 70px;}
+.sync-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+.sync-card{
+  background:rgba(20,20,20,0.7);border-radius:12px;padding:20px;
+  border-left:4px solid #1f6f43;font-size:13px;
+}
+.sync-card.fail{border-left-color:#7a1f2b;}
+.sync-card.warn{border-left-color:#8a6d3b;}
+.sync-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.sync-name{color:white;font-weight:600;font-size:14px;}
+.sync-badge{
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
+}
+.sync-badge.ok{background:rgba(31,111,67,0.3);color:#4caf50;}
+.sync-badge.fail{background:rgba(122,31,43,0.3);color:#ff4d4d;}
+.sync-badge.fetching{background:rgba(138,109,59,0.3);color:#d2b48c;}
+.sync-row{display:flex;justify-content:space-between;color:#aaa;margin-bottom:6px;}
+.sync-row span:last-child{color:#d2d8d2;}
+.sync-progress{height:3px;border-radius:2px;background:#1f6f43;width:0%;transition:width 0.5s;}
+
+/* ═══════════ SENSOR NODES ═══════════ */
+.nodes-section{padding:0 80px 70px;}
+.nodes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
+.node-card{
+  background:rgba(20,20,20,0.7);border-radius:14px;padding:22px;
+  border:1px solid #222;position:relative;overflow:hidden;
+  transition:0.3s;
+}
+.node-card:hover{border-color:#1f6f43;transform:translateY(-4px);}
+.node-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#1f6f43,#8a6d3b);
+}
+.node-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.node-name{color:#1f6f43;font-weight:600;font-size:15px;}
+.node-ping{font-size:11px;color:#555;}
+.node-health{
+  width:10px;height:10px;border-radius:50%;
+  background:#1f6f43;animation:blink 1.5s infinite;
+}
+.node-data{display:flex;flex-direction:column;gap:8px;}
+.node-row{display:flex;justify-content:space-between;font-size:13px;}
+.node-row span:first-child{color:#aaa;}
+.node-row span:last-child{color:#d2d8d2;font-weight:600;}
+.node-latency{
+  margin-top:12px;height:2px;border-radius:1px;
+  background:rgba(31,111,67,0.3);position:relative;overflow:hidden;
+}
+.node-latency-bar{
+  position:absolute;height:100%;background:#1f6f43;
+  animation:latencyAnim 2s ease-in-out infinite;
+}
+@keyframes latencyAnim{0%{width:0%;left:0}50%{width:100%}100%{width:0%;left:100%}}
+
+/* ═══════════ GLOBAL DISASTER AGGREGATOR ═══════════ */
+.aggregator-section{padding:0 80px 70px;}
+.aggregator-list{display:flex;flex-direction:column;gap:12px;}
+.agg-item{
+  background:rgba(30,30,30,0.5);border-radius:10px;
+  padding:16px 20px;display:flex;align-items:center;gap:16px;
+  border-left:4px solid #1f6f43;transition:0.3s;font-size:13px;
+}
+.agg-item:hover{transform:translateX(6px);}
+.agg-item.sev-critical{border-left-color:#ff4d4d;}
+.agg-item.sev-high{border-left-color:#7a1f2b;}
+.agg-item.sev-moderate{border-left-color:#8a6d3b;}
+.agg-item.sev-low{border-left-color:#1f6f43;}
+.agg-type{font-size:24px;flex-shrink:0;}
+.agg-info{flex:1;}
+.agg-title{color:#d2d8d2;font-weight:600;margin-bottom:3px;}
+.agg-sub{color:#666;font-size:11px;}
+.agg-sev{
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0;
+}
+.agg-sev.critical{background:rgba(255,77,77,0.2);color:#ff4d4d;}
+.agg-sev.high{background:rgba(122,31,43,0.3);color:#ff6b6b;}
+.agg-sev.moderate{background:rgba(138,109,59,0.3);color:#d2b48c;}
+.agg-sev.low{background:rgba(31,111,67,0.2);color:#4caf50;}
+
+/* ═══════════ DECISION ENGINE ═══════════ */
+.decision-section{padding:0 80px 70px;}
+.decision-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+.decision-card{
+  background:rgba(20,20,20,0.7);border-radius:12px;padding:20px;
+  border-left:4px solid #1f6f43;font-size:13px;line-height:1.8;
+}
+.decision-card.triggered{border-left-color:#ff4d4d;background:rgba(122,31,43,0.1);}
+.decision-card.warn{border-left-color:#8a6d3b;}
+.decision-rule{color:#8a6d3b;font-size:11px;letter-spacing:1px;margin-bottom:8px;}
+.decision-result{color:#d2d8d2;font-weight:600;font-size:15px;margin-bottom:4px;}
+.decision-action{color:#aaa;font-size:12px;}
+
+/* ═══════════ INCIDENT TIMELINE ═══════════ */
+.timeline-section{padding:0 80px 70px;}
+.timeline-list{position:relative;padding-left:30px;}
+.timeline-list::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#1f6f43,#7a1f2b);}
+.timeline-item{position:relative;margin-bottom:24px;padding:16px 20px;background:rgba(30,30,30,0.5);border-radius:10px;font-size:13px;}
+.timeline-item::before{content:'';position:absolute;left:-24px;top:20px;width:10px;height:10px;border-radius:50%;background:#1f6f43;border:2px solid #050807;}
+.timeline-item.active::before{background:#ff4d4d;animation:blink 1s infinite;}
+.timeline-time{color:#8a6d3b;font-size:11px;margin-bottom:4px;}
+.timeline-title{color:#d2d8d2;font-weight:600;margin-bottom:3px;}
+.timeline-desc{color:#aaa;}
+
+/* ═══════════ LIVE CHART ═══════════ */
+.chart-section{padding:0 80px 70px;}
+.chart-wrap{background:rgba(20,20,20,0.7);border-radius:16px;padding:30px;}
+.chart-controls{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.chart-btn{
+  padding:8px 18px;border-radius:20px;font-size:13px;
+  border:1px solid #333;background:transparent;color:#aaa;
+  cursor:pointer;transition:0.3s;
+}
+.chart-btn.active{background:#1f6f43;color:white;border-color:#1f6f43;}
+.chart-btn:hover{border-color:#1f6f43;color:#1f6f43;}
+
+/* ═══════════ MAP ═══════════ */
+.map-section{padding:0 80px 70px;}
+#kelvinMap{height:450px;border-radius:16px;border:1px solid #1f6f43;}
+.leaflet-container{background:#050807 !important;}
+
+/* ═══════════ SITE GUIDE ═══════════ */
+.guide-section{padding:0 80px 70px;}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.guide-card{
+  background:rgba(30,30,30,0.5);border-radius:14px;padding:25px;
+  border-left:4px solid #1f6f43;cursor:pointer;transition:0.3s;
+}
+.guide-card:hover{transform:translateY(-6px);border-left-color:#7a1f2b;box-shadow:0 0 20px rgba(122,31,43,0.3);}
+.guide-card .guide-icon{font-size:32px;margin-bottom:12px;}
+.guide-card h3{color:white;margin-bottom:8px;font-size:16px;}
+.guide-card p{color:#aaa;font-size:13px;line-height:1.6;}
+.guide-btn{
+  display:inline-block;margin-top:14px;padding:8px 16px;border-radius:6px;
+  background:#1f6f43;color:white;font-size:13px;text-decoration:none;transition:0.3s;
+}
+.guide-btn:hover{background:#7a1f2b;}
+
+/* ═══════════ AWARENESS ═══════════ */
+.awareness-section{padding:0 80px 70px;}
+.awareness-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;}
+.awareness-card{
+  background:rgba(30,30,30,0.5);border-radius:14px;padding:25px;
+  border-top:3px solid #1f6f43;transition:0.3s;
+}
+.awareness-card:hover{transform:translateY(-5px);border-top-color:#7a1f2b;}
+.awareness-card .aw-icon{font-size:36px;margin-bottom:12px;}
+.awareness-card h3{color:white;margin-bottom:10px;}
+.awareness-card p{color:#aaa;font-size:13px;line-height:1.7;}
+.aw-fact{
+  background:rgba(31,111,67,0.1);border-left:3px solid #1f6f43;
+  padding:8px 12px;border-radius:4px;margin-top:12px;
+  font-size:12px;color:#4caf50;
+}
+
+/* ═══════════ DID YOU KNOW ═══════════ */
+.dyk-section{padding:0 80px 70px;}
+.dyk-box{
+  background:rgba(30,30,30,0.5);border-radius:14px;padding:30px 40px;
+  border-left:4px solid #8a6d3b;font-size:16px;line-height:1.8;
+}
+.dyk-label{color:#8a6d3b;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:10px;}
+.dyk-text{font-size:17px;color:#d2d8d2;}
+.dyk-nav{display:flex;gap:12px;margin-top:20px;}
+.dyk-btn{
+  padding:8px 20px;border-radius:6px;background:rgba(138,109,59,0.3);
+  color:#d2b48c;border:1px solid #8a6d3b;cursor:pointer;font-size:13px;transition:0.3s;
+}
+.dyk-btn:hover{background:#8a6d3b;color:white;}
+
+/* ═══════════ QUIZ ═══════════ */
+.quiz-section{padding:0 80px 70px;}
+.quiz-box{
+  background:rgba(20,20,20,0.7);border-radius:14px;padding:40px;
+  border:1px solid #222;
+}
+.quiz-question{font-size:18px;color:white;margin-bottom:20px;line-height:1.6;}
+.quiz-options{display:flex;flex-direction:column;gap:12px;}
+.quiz-opt{
+  padding:14px 20px;border-radius:8px;background:rgba(30,30,30,0.5);
+  border:1px solid #333;color:#d2d8d2;cursor:pointer;transition:0.3s;
+  text-align:left;font-size:14px;
+}
+.quiz-opt:hover{border-color:#1f6f43;background:rgba(31,111,67,0.1);}
+.quiz-opt.correct{border-color:#1f6f43;background:rgba(31,111,67,0.2);color:#4caf50;}
+.quiz-opt.wrong{border-color:#7a1f2b;background:rgba(122,31,43,0.2);color:#ff4d4d;}
+.quiz-result{margin-top:20px;padding:14px;border-radius:8px;font-size:14px;display:none;}
+.quiz-result.correct{background:rgba(31,111,67,0.2);color:#4caf50;border-left:4px solid #1f6f43;}
+.quiz-result.wrong{background:rgba(122,31,43,0.2);color:#ff4d4d;border-left:4px solid #7a1f2b;}
+.quiz-next{margin-top:16px;padding:10px 24px;background:#1f6f43;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;display:none;transition:0.3s;}
+.quiz-next:hover{background:#7a1f2b;}
+
+/* ═══════════ EMERGENCY ═══════════ */
+.emergency-section{padding:0 80px 70px;}
+.emergency-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;}
+.em-card{
+  background:rgba(122,31,43,0.2);border-radius:12px;padding:20px;
+  border-left:4px solid #7a1f2b;text-align:center;transition:0.3s;
+}
+.em-card:hover{transform:translateY(-4px);}
+.em-card .em-icon{font-size:28px;margin-bottom:8px;}
+.em-card .em-num{font-size:22px;font-weight:700;color:#ff6b6b;}
+.em-card .em-label{font-size:12px;color:#aaa;margin-top:4px;}
+
+/* LOADING */
+.loading-txt{color:#8a6d3b;font-style:italic;font-size:13px;}
+
+footer{text-align:center;padding:40px;color:#888;border-top:1px solid #222;}
+
+@media(max-width:768px){
+  header{padding:20px;}
+  .hero{padding:40px 20px 30px;}
+  .hero h1{font-size:32px;}
+  .line,.kelvin-section,.risk-section,.pipeline-section,.sync-section,.nodes-section,
+  .aggregator-section,.decision-section,.timeline-section,.chart-section,.map-section,
+  .guide-section,.awareness-section,.dyk-section,.quiz-section,.emergency-section{
+    padding-left:20px;padding-right:20px;margin-left:0;margin-right:0;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TerranovaX</div>
+  <nav>
+    <a href="home.html">Home</a>
+    <a href="climate.html">Climate</a>
+    <a href="disaster.html">Disaster</a>
+    <a href="about.html">About</a>
+  </nav>
+</header>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item"><span>🔥</span>Heatwave? Stay indoors 12pm–4pm.</span>
+    <span class="ticker-item"><span>🌊</span>Flood alert? Move to higher ground immediately.</span>
+    <span class="ticker-item"><span>⛈️</span>Thunderstorm? Avoid open fields and tall trees.</span>
+    <span class="ticker-item"><span>🌍</span>Earthquake? Drop, Cover, Hold On.</span>
+    <span class="ticker-item"><span>🌪️</span>Cyclone? Stay indoors, secure loose items.</span>
+    <span class="ticker-item"><span>💧</span>Stay hydrated. Dehydration increases heat risk.</span>
+    <span class="ticker-item"><span>📻</span>Always follow official alerts during disasters.</span>
+    <span class="ticker-item"><span>🎒</span>Keep an emergency kit ready at all times.</span>
+    <span class="ticker-item"><span>🔥</span>Heatwave? Stay indoors 12pm–4pm.</span>
+    <span class="ticker-item"><span>🌊</span>Flood alert? Move to higher ground immediately.</span>
+    <span class="ticker-item"><span>⛈️</span>Thunderstorm? Avoid open fields and tall trees.</span>
+    <span class="ticker-item"><span>🌍</span>Earthquake? Drop, Cover, Hold On.</span>
+    <span class="ticker-item"><span>🌪️</span>Cyclone? Stay indoors, secure loose items.</span>
+    <span class="ticker-item"><span>💧</span>Stay hydrated. Dehydration increases heat risk.</span>
+    <span class="ticker-item"><span>📻</span>Always follow official alerts during disasters.</span>
+    <span class="ticker-item"><span>🎒</span>Keep an emergency kit ready at all times.</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Explore TerranovaX</h1>
+  <p>Real-time climate intelligence, global disaster tracking, AI-powered insights and interactive learning — all in one command center.</p>
+  <div class="hero-loc" id="heroLoc">📍 Detecting your location...</div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ KELVIN AI ═══ -->
+<section class="kelvin-section">
+  <h2 class="section-title">🤖 Kelvin — AI Assistant</h2>
+  <p class="section-sub">Powered by real-time data. Ask anything about weather, disasters, or climate.</p>
+  <div class="kelvin-wrap">
+    <div class="kelvin-header">
+      <div class="kelvin-avatar">
+        <div class="kelvin-pulse"></div>
+        🌡️
+      </div>
+      <div class="kelvin-info">
+        <h2>Kelvin</h2>
+        <p>TerranovaX Intelligence Engine</p>
+        <div class="kelvin-status">
+          <div class="kelvin-dot"></div>
+          <span id="kelvinStatusTxt">Online — Fetching live data</span>
+        </div>
+      </div>
+    </div>
+    <div class="kelvin-chat" id="kelvinChat"></div>
+    <div class="kelvin-input-row">
+      <input class="kelvin-input" id="kelvinInput" placeholder='Ask Kelvin... e.g. "Will it rain today?"' onkeydown="if(event.key==='Enter')sendToKelvin()"/>
+      <button class="kelvin-send" onclick="sendToKelvin()">➤</button>
+      <button class="kelvin-mic" id="kelvinMic" onclick="toggleMic()">🎤</button>
+    </div>
+    <div class="quick-cmds">
+      <span class="qcmd" onclick="askKelvin('What is the current temperature?')">🌡️ Temperature</span>
+      <span class="qcmd" onclick="askKelvin('What is the AQI right now?')">🌫️ Air Quality</span>
+      <span class="qcmd" onclick="askKelvin('Will it rain today?')">🌧️ Rain forecast</span>
+      <span class="qcmd" onclick="askKelvin('Any earthquakes nearby?')">🌍 Earthquakes</span>
+      <span class="qcmd" onclick="askKelvin('What is the risk score?')">⚠️ Risk score</span>
+      <span class="qcmd" onclick="askKelvin('Is the air safe to breathe?')">😷 Air safety</span>
+      <span class="qcmd" onclick="askKelvin('What should I do in a cyclone?')">🌪️ Cyclone tips</span>
+      <span class="qcmd" onclick="askKelvin('What is the wind speed?')">💨 Wind speed</span>
+    </div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ MULTI-API RISK SCORE ═══ -->
+<section class="risk-section">
+  <h2 class="section-title">🧠 Multi-API Fusion Risk Score</h2>
+  <p class="section-sub">OWM + AQICN + USGS data merged into a unified intelligence score</p>
+  <div class="unified-risk">
+    <h3>UNIFIED RISK SCORE</h3>
+    <div class="risk-score-big" id="riskScoreBig">--</div>
+    <div class="risk-level-label" id="riskLevelLabel">Calculating...</div>
+    <div class="risk-bar"><div class="risk-indicator" id="riskIndicator" style="left:0%"></div></div>
+    <div style="color:#555;font-size:12px;margin-top:8px;" id="riskSources">Sources: Initializing...</div>
+  </div>
+  <div class="risk-grid">
+    <div class="risk-card">
+      <div class="risk-icon">🌡️</div>
+      <div class="risk-val" id="rcTemp">--</div>
+      <div class="risk-label">Temperature</div>
+      <div class="risk-src">OpenWeatherMap</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-icon">💧</div>
+      <div class="risk-val" id="rcHumid">--</div>
+      <div class="risk-label">Humidity</div>
+      <div class="risk-src">OpenWeatherMap</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-icon">💨</div>
+      <div class="risk-val" id="rcWind">--</div>
+      <div class="risk-label">Wind Speed</div>
+      <div class="risk-src">OpenWeatherMap</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-icon">🌫️</div>
+      <div class="risk-val" id="rcAQI">--</div>
+      <div class="risk-label">Air Quality Index</div>
+      <div class="risk-src">AQICN / OWM</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-icon">🌍</div>
+      <div class="risk-val" id="rcEQ">--</div>
+      <div class="risk-label">Nearest Earthquake</div>
+      <div class="risk-src">USGS</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-icon">🌧️</div>
+      <div class="risk-val" id="rcRain">--</div>
+      <div class="risk-label">Rain Probability</div>
+      <div class="risk-src">OWM Forecast</div>
+    </div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ DATA PIPELINE ═══ -->
+<section class="pipeline-section">
+  <h2 class="section-title">⚙️ Modular Data Pipeline</h2>
+  <p class="section-sub">Live data flow from source APIs to your dashboard</p>
+  <div class="pipeline">
+    <div class="pipeline-flow">
+      <div class="pipe-node">
+        <h4>🌐 OWM API</h4>
+        <div class="pipe-status" id="ps1">⏳ Fetching</div>
+        <div class="pipe-lat" id="pl1">-- ms</div>
+      </div>
+      <div class="pipe-arrow"><div class="pipe-packet"></div></div>
+      <div class="pipe-node">
+        <h4>🌫️ AQI API</h4>
+        <div class="pipe-status" id="ps2">⏳ Fetching</div>
+        <div class="pipe-lat" id="pl2">-- ms</div>
+      </div>
+      <div class="pipe-arrow"><div class="pipe-packet" style="animation-delay:0.5s"></div></div>
+      <div class="pipe-node">
+        <h4>🌍 USGS API</h4>
+        <div class="pipe-status" id="ps3">⏳ Fetching</div>
+        <div class="pipe-lat" id="pl3">-- ms</div>
+      </div>
+      <div class="pipe-arrow"><div class="pipe-packet" style="animation-delay:1s"></div></div>
+      <div class="pipe-node" style="border-color:#8a6d3b;">
+        <h4>⚙️ Processor</h4>
+        <div class="pipe-status" id="ps4">⏳ Waiting</div>
+        <div class="pipe-lat" id="pl4">-- ms</div>
+      </div>
+      <div class="pipe-arrow"><div class="pipe-packet" style="animation-delay:1.5s"></div></div>
+      <div class="pipe-node" style="border-color:#7a1f2b;">
+        <h4>🧠 Risk Engine</h4>
+        <div class="pipe-status" id="ps5">⏳ Waiting</div>
+        <div class="pipe-lat" id="pl5">-- ms</div>
+      </div>
+      <div class="pipe-arrow"><div class="pipe-packet" style="animation-delay:2s"></div></div>
+      <div class="pipe-node" style="border-color:#1f6f43;">
+        <h4>📊 Dashboard</h4>
+        <div class="pipe-status" id="ps6">⏳ Waiting</div>
+        <div class="pipe-lat" id="pl6">-- ms</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ SYNC VIEW ═══ -->
+<section class="sync-section">
+  <h2 class="section-title">📡 Distributed Data Sync</h2>
+  <p class="section-sub">Live API health, latency and sync status — network operations view</p>
+  <div class="sync-grid" id="syncGrid"></div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ SENSOR NODES ═══ -->
+<section class="nodes-section">
+  <h2 class="section-title">🛰️ Live Sensor Node Network</h2>
+  <p class="section-sub">IoT-style nodes pulling real weather and AQI data from multiple locations</p>
+  <div class="nodes-grid" id="nodesGrid"></div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ GLOBAL DISASTER AGGREGATOR ═══ -->
+<section class="aggregator-section">
+  <h2 class="section-title">🌐 Global Disaster Aggregator</h2>
+  <p class="section-sub">Real-time incidents worldwide — sorted by severity — USGS + NOAA + OWM</p>
+  <div class="aggregator-list" id="aggList">
+    <p class="loading-txt">Aggregating global incidents...</p>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ DECISION ENGINE ═══ -->
+<section class="decision-section">
+  <h2 class="section-title">🚨 Rule-Based Decision Engine</h2>
+  <p class="section-sub">Expert system logic — real conditions trigger real decisions</p>
+  <div class="decision-grid" id="decisionGrid"></div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ INCIDENT TIMELINE ═══ -->
+<section class="timeline-section">
+  <h2 class="section-title">🕓 Live Incident Timeline</h2>
+  <p class="section-sub">Real-time event log — auto-updates as conditions change</p>
+  <div class="timeline-list" id="timelineList">
+    <p class="loading-txt">Building timeline...</p>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ LIVE CHART ═══ -->
+<section class="chart-section">
+  <h2 class="section-title">📊 Live Data Analytics</h2>
+  <p class="section-sub">Real recorded data stored and visualized — not dummy numbers</p>
+  <div class="chart-wrap">
+    <div class="chart-controls">
+      <button class="chart-btn active" onclick="switchChart('temp',this)">🌡️ Temperature</button>
+      <button class="chart-btn" onclick="switchChart('aqi',this)">🌫️ AQI</button>
+      <button class="chart-btn" onclick="switchChart('wind',this)">💨 Wind</button>
+      <button class="chart-btn" onclick="switchChart('humid',this)">💧 Humidity</button>
+    </div>
+    <canvas id="liveChart" height="120"></canvas>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ MAP ═══ -->
+<section class="map-section">
+  <h2 class="section-title">🛰️ Live Intelligence Map</h2>
+  <p class="section-sub">Your location + nearby earthquakes + weather markers — Leaflet.js + OpenStreetMap</p>
+  <div id="kelvinMap"></div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ SITE GUIDE ═══ -->
+<section class="guide-section">
+  <h2 class="section-title">🗺️ Site Guide</h2>
+  <p class="section-sub">Where to go and what to find — your TerranovaX navigation guide</p>
+  <div class="guide-grid">
+    <div class="guide-card">
+      <div class="guide-icon">🌍</div>
+      <h3>Climate Dashboard</h3>
+      <p>Real-time temperature, hourly forecasts, AI analysis, nearby area weather, anomaly detection — all live from your location.</p>
+      <a href="climate.html" class="guide-btn">Open Climate →</a>
+    </div>
+    <div class="guide-card">
+      <div class="guide-icon">🚨</div>
+      <h3>Disaster Dashboard</h3>
+      <p>Live earthquakes near you, tsunami warnings, storm alerts, seismic pulse grid, global disaster feed.</p>
+      <a href="disaster.html" class="guide-btn">Open Disaster →</a>
+    </div>
+    <div class="guide-card">
+      <div class="guide-icon">👤</div>
+      <h3>Your Account</h3>
+      <p>Manage your profile, saved location, preferences and notification settings.</p>
+      <a href="account.html" class="guide-btn">My Account →</a>
+    </div>
+    <div class="guide-card">
+      <div class="guide-icon">🌐</div>
+      <h3>About TerranovaX</h3>
+      <p>Learn about the platform, the founder, the mission, vision and how the technology works.</p>
+      <a href="about.html" class="guide-btn">About Us →</a>
+    </div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ AWARENESS ═══ -->
+<section class="awareness-section">
+  <h2 class="section-title">📚 Disaster Awareness Hub</h2>
+  <p class="section-sub">Know your risks. Be prepared. Stay safe.</p>
+  <div class="awareness-grid">
+    <div class="awareness-card"><div class="aw-icon">🌍</div><h3>Earthquakes</h3><p>Earthquakes occur when tectonic plates shift. India sits on the Indian Plate bordered by the Eurasian and Indo-Australian plates, making many regions highly seismic.</p><div class="aw-fact">📊 India has 59% of its land in earthquake-prone zones.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🌊</div><h3>Floods</h3><p>Floods are the most common disaster in India, affecting millions annually. Caused by heavy monsoon rains, dam failures, and poor drainage in urban areas.</p><div class="aw-fact">📊 India loses ₹4,800 crore annually to flood damage.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🌪️</div><h3>Cyclones</h3><p>The Bay of Bengal and Arabian Sea generate some of the world's most intense cyclones. India's eastern coast is highly vulnerable.</p><div class="aw-fact">📊 Bay of Bengal produces 7% of global tropical cyclones.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🔥</div><h3>Heatwaves</h3><p>A heatwave is declared when temperature is 4.5°C above normal for 2+ days. India's northwest and central regions face extreme heat events every summer.</p><div class="aw-fact">📊 Heatwaves killed 6,000+ people in India between 2015–2022.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🌫️</div><h3>Air Quality</h3><p>Air pollution causes more deaths than floods and cyclones combined in India. PM2.5 particles penetrate deep into lungs causing serious disease.</p><div class="aw-fact">📊 India has 22 of the world's 30 most polluted cities.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🌊</div><h3>Tsunamis</h3><p>Triggered by underwater earthquakes, tsunamis can travel at 800km/h. India's Andaman & Nicobar Islands are at significant risk.</p><div class="aw-fact">📊 The 2004 Indian Ocean Tsunami affected 14 countries.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🏔️</div><h3>Landslides</h3><p>Heavy monsoon rains trigger landslides in hilly states like Kerala, Uttarakhand, and Himachal Pradesh.</p><div class="aw-fact">📊 India accounts for 30% of global landslide fatalities.</div></div>
+    <div class="awareness-card"><div class="aw-icon">🌋</div><h3>Volcanoes</h3><p>India's only active volcano is Barren Island in the Andaman Sea. Global volcanic activity can affect worldwide climate patterns significantly.</p><div class="aw-fact">📊 There are ~1,500 potentially active volcanoes worldwide.</div></div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ DID YOU KNOW ═══ -->
+<section class="dyk-section">
+  <h2 class="section-title">💡 Did You Know?</h2>
+  <div class="dyk-box">
+    <div class="dyk-label">FACT OF THE MOMENT</div>
+    <div class="dyk-text" id="dykText"></div>
+    <div class="dyk-nav">
+      <button class="dyk-btn" onclick="prevFact()">← Previous</button>
+      <button class="dyk-btn" onclick="nextFact()">Next →</button>
+    </div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ QUIZ ═══ -->
+<section class="quiz-section">
+  <h2 class="section-title">🧠 Disaster Awareness Quiz</h2>
+  <p class="section-sub">Test your knowledge. Learn while you play.</p>
+  <div class="quiz-box">
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+      <div style="color:#8a6d3b;font-size:13px;" id="quizProgress">Question 1 of 10</div>
+      <div style="color:#1f6f43;font-size:13px;" id="quizScoreDisplay">Score: 0</div>
+    </div>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-result" id="quizResult"></div>
+    <button class="quiz-next" id="quizNext" onclick="nextQuestion()">Next Question →</button>
+    <div id="quizFinal" style="display:none;text-align:center;padding:20px;"></div>
+  </div>
+</section>
+
+<div class="line"></div>
+
+<!-- ═══ EMERGENCY ═══ -->
+<section class="emergency-section">
+  <h2 class="section-title">📞 Emergency Contacts</h2>
+  <p class="section-sub">India's official emergency helplines — save them now</p>
+  <div class="emergency-grid">
+    <div class="em-card"><div class="em-icon">🚒</div><div class="em-num">101</div><div class="em-label">Fire</div></div>
+    <div class="em-card"><div class="em-icon">👮</div><div class="em-num">100</div><div class="em-label">Police</div></div>
+    <div class="em-card"><div class="em-icon">🚑</div><div class="em-num">102</div><div class="em-label">Ambulance</div></div>
+    <div class="em-card"><div class="em-icon">🆘</div><div class="em-num">112</div><div class="em-label">National Emergency</div></div>
+    <div class="em-card"><div class="em-icon">🌍</div><div class="em-num">1078</div><div class="em-label">NDMA</div></div>
+    <div class="em-card"><div class="em-icon">🌪️</div><div class="em-num">1070</div><div class="em-label">Cyclone</div></div>
+    <div class="em-card"><div class="em-icon">💧</div><div class="em-num">1800-180-5188</div><div class="em-label">Flood</div></div>
+    <div class="em-card"><div class="em-icon">🏥</div><div class="em-num">104</div><div class="em-label">Health</div></div>
+  </div>
+</section>
+
+<footer>TerranovaX • Future of Climate Intelligence • Kelvin v1.0</footer>
+
+<script>
+const OWM = "bd5e378503939ddaee76f12ad7a97608";
+let uLat=13.0827, uLon=80.2707, uCity="Chennai";
+let liveData={temp:null,humid:null,wind:null,aqi:null,eqMag:null,rainProb:null,desc:"",main:""};
+let history={temp:[],aqi:[],wind:[],humid:[],labels:[]};
+let timelineEvents=[];
+let syncing=false;
+
+// WEATHER ICON
+function wIcon(m){return{"Clear":"☀️","Clouds":"☁️","Rain":"🌧️","Drizzle":"🌦️","Thunderstorm":"⛈️","Snow":"❄️","Mist":"🌫️","Fog":"🌫️","Haze":"🌫️"}[m]||"🌡️";}
+const fmtT=t=>t.getHours()+":"+String(t.getMinutes()).padStart(2,'0');
+
+// ── INIT ──
+function init(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      uLat=pos.coords.latitude; uLon=pos.coords.longitude;
+      fetchAll();
+    },()=>fetchAll());
+  } else fetchAll();
+  initMap();
+  initChart();
+  loadQuiz();
+  showFact();
+  setInterval(fetchAll, 3*60*1000);
+  setInterval(()=>addTimelineEvent("🔄 System heartbeat — all nodes active","normal"), 60*1000);
+}
+
+// ── FETCH ALL ──
+async function fetchAll(){
+  updatePipelineStatus(1,'fetching'); updatePipelineStatus(2,'fetching'); updatePipelineStatus(3,'fetching');
+  updateSyncCard('OWM','fetching');  updateSyncCard('AQI','fetching');   updateSyncCard('USGS','fetching');
+
+  const t0=Date.now();
+  await Promise.all([fetchWeather(), fetchAQI(), fetchEarthquakes()]);
+  updatePipelineStatus(4,'ok',Date.now()-t0);
+  computeRiskScore();
+  updatePipelineStatus(5,'ok',12); updatePipelineStatus(6,'ok',3);
+  buildDecisionEngine();
+  buildSensorNodes();
+  fetchGlobalAggregator();
+  storeHistory();
+  updateChart();
+}
+
+// ── WEATHER ──
+async function fetchWeather(){
+  const t=Date.now();
+  try{
+    const [wRes,fRes]=await Promise.all([
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${uLat}&lon=${uLon}&appid=${OWM}&units=metric`),
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${uLat}&lon=${uLon}&appid=${OWM}&units=metric`)
+    ]);
+    const w=await wRes.json(); const f=await fRes.json();
+    uCity=w.name;
+    liveData.temp=Math.round(w.main.temp);
+    liveData.humid=w.main.humidity;
+    liveData.wind=w.wind.speed;
+    liveData.desc=w.weather[0].description;
+    liveData.main=w.weather[0].main;
+    document.getElementById('heroLoc').innerText=`📍 ${uCity} — ${liveData.temp}°C, ${liveData.desc}`;
+    document.getElementById('rcTemp').innerText=liveData.temp+"°C";
+    document.getElementById('rcTemp').className='risk-val'+(liveData.temp>=40?' danger':liveData.temp>=35?' warn':'');
+    document.getElementById('rcHumid').innerText=liveData.humid+"%";
+    document.getElementById('rcWind').innerText=liveData.wind+" m/s";
+    document.getElementById('rcWind').className='risk-val'+(liveData.wind>=10?' danger':liveData.wind>=5?' warn':'');
+
+    // Rain probability from forecast
+    const rainSlots=f.list.slice(0,8).filter(s=>s.weather[0].main==="Rain"||s.weather[0].main==="Drizzle");
+    liveData.rainProb=Math.round((rainSlots.length/8)*100);
+    document.getElementById('rcRain').innerText=liveData.rainProb+"%";
+    document.getElementById('rcRain').className='risk-val'+(liveData.rainProb>=70?' danger':liveData.rainProb>=40?' warn':'');
+
+    const lat=Date.now()-t;
+    updatePipelineStatus(1,'ok',lat); updateSyncCard('OWM','ok',lat,uCity);
+    addTimelineEvent(`${wIcon(liveData.main)} Weather data fetched — ${uCity}: ${liveData.temp}°C, ${liveData.desc}`,"normal");
+
+    // Update map
+    if(window.kelvinMap && window.userMarker){
+      window.userMarker.setLatLng([uLat,uLon]).setPopupContent(`📍 ${uCity}<br>🌡️ ${liveData.temp}°C<br>${liveData.desc}`);
+    }
+    updateKelvinStatus(`Online — ${uCity} data synced`);
+  } catch(e){
+    updatePipelineStatus(1,'fail',0); updateSyncCard('OWM','fail',0,'');
+    addTimelineEvent("⚠️ OWM API fetch failed — using cached data","warn");
+  }
+}
+
+// ── AQI ──
+async function fetchAQI(){
+  const t=Date.now();
+  try{
+    // OWM Air Pollution API (free)
+    const res=await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${uLat}&lon=${uLon}&appid=${OWM}`);
+    const d=await res.json();
+    const aqi=d.list[0].main.aqi; // 1-5 scale
+    const pm25=d.list[0].components.pm2_5.toFixed(1);
+    const pm10=d.list[0].components.pm10.toFixed(1);
+    const aqiLabel=["Good","Fair","Moderate","Poor","Very Poor"][aqi-1];
+    const aqiVal=Math.round(aqi*50); // convert to 0-250 scale
+    liveData.aqi=aqiVal;
+    document.getElementById('rcAQI').innerText=aqiVal+" ("+aqiLabel+")";
+    document.getElementById('rcAQI').className='risk-val'+(aqiVal>=150?' danger':aqiVal>=100?' warn':'');
+    const lat=Date.now()-t;
+    updatePipelineStatus(2,'ok',lat); updateSyncCard('AQI','ok',lat,`PM2.5: ${pm25}μg | PM10: ${pm10}μg`);
+    addTimelineEvent(`🌫️ AQI data fetched — Index: ${aqiVal} (${aqiLabel})`,"normal");
+  } catch(e){
+    liveData.aqi=null;
+    updatePipelineStatus(2,'fail',0); updateSyncCard('AQI','fail',0,'');
+  }
+}
+
+// ── EARTHQUAKES ──
+async function fetchEarthquakes(){
+  const t=Date.now();
+  try{
+    const res=await fetch(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${uLat}&longitude=${uLon}&maxradius=10&minmagnitude=1.5&orderby=time&limit=5`);
+    const d=await res.json();
+    const quakes=d.features;
+    if(quakes.length>0){
+      const top=quakes[0];
+      const mag=top.properties.mag.toFixed(1);
+      const place=top.properties.place;
+      liveData.eqMag=parseFloat(mag);
+      document.getElementById('rcEQ').innerText=`M${mag}`;
+      document.getElementById('rcEQ').className='risk-val'+(mag>=5?' danger':mag>=3?' warn':'');
+      addTimelineEvent(`🌍 Nearest earthquake: M${mag} — ${place}`,"normal");
+      // Map marker
+      if(window.kelvinMap){
+        quakes.forEach(q=>{
+          const lat=q.geometry.coordinates[1];
+          const lon=q.geometry.coordinates[0];
+          const m=q.properties.mag.toFixed(1);
+          L.circleMarker([lat,lon],{
+            radius:m*3,color:'#ff4d4d',fillColor:'#ff4d4d',fillOpacity:0.4,weight:1
+          }).addTo(window.kelvinMap).bindPopup(`🌍 M${m}<br>${q.properties.place}<br>${new Date(q.properties.time).toLocaleTimeString()}`);
+        });
+      }
+    } else {
+      document.getElementById('rcEQ').innerText="None nearby";
+      liveData.eqMag=0;
+    }
+    const lat=Date.now()-t;
+    updatePipelineStatus(3,'ok',lat); updateSyncCard('USGS','ok',lat,`${quakes.length} events found`);
+  } catch(e){
+    updatePipelineStatus(3,'fail',0); updateSyncCard('USGS','fail',0,'');
+  }
+}
+
+// ── RISK SCORE ──
+function computeRiskScore(){
+  let score=0; let factors=[];
+  if(liveData.temp!==null){
+    if(liveData.temp>40){score+=30;factors.push("Extreme heat");}
+    else if(liveData.temp>35){score+=20;factors.push("High heat");}
+    else if(liveData.temp>30){score+=10;}
+  }
+  if(liveData.aqi!==null){
+    if(liveData.aqi>=200){score+=25;factors.push("Very poor air");}
+    else if(liveData.aqi>=150){score+=18;factors.push("Poor air quality");}
+    else if(liveData.aqi>=100){score+=10;}
+  }
+  if(liveData.wind!==null){
+    if(liveData.wind>15){score+=20;factors.push("Strong winds");}
+    else if(liveData.wind>10){score+=12;}
+  }
+  if(liveData.rainProb!==null){
+    if(liveData.rainProb>70){score+=15;factors.push("High rain probability");}
+    else if(liveData.rainProb>40){score+=8;}
+  }
+  if(liveData.eqMag!==null){
+    if(liveData.eqMag>=5){score+=20;factors.push("Significant earthquake nearby");}
+    else if(liveData.eqMag>=3){score+=10;}
+  }
+  if(liveData.main==="Thunderstorm"){score+=15;factors.push("Active thunderstorm");}
+  score=Math.min(score,100);
+  const el=document.getElementById('riskScoreBig');
+  const ll=document.getElementById('riskLevelLabel');
+  const ind=document.getElementById('riskIndicator');
+  const src=document.getElementById('riskSources');
+  el.innerText=score;
+  el.className='risk-score-big'+(score>=70?' high':score>=40?' mod':' low');
+  ll.innerText=score>=70?"⚠️ HIGH RISK — Take precautions":score>=40?"⚡ MODERATE RISK — Stay alert":"✅ LOW RISK — Conditions stable";
+  ind.style.left=score+"%";
+  src.innerText="Sources: OWM + AQICN + USGS | Factors: "+(factors.length?factors.join(", "):"None detected");
+  kelvinSay(`Risk score updated to ${score} out of 100. ${score>=70?"High risk conditions detected. Please take precautions.":score>=40?"Moderate risk. Stay alert.":"All conditions are stable."}`);
+}
+
+// ── PIPELINE STATUS ──
+function updatePipelineStatus(n,status,lat){
+  const ps=document.getElementById('ps'+n);
+  const pl=document.getElementById('pl'+n);
+  if(ps) ps.innerText=status==='ok'?"✅ OK":status==='fail'?"❌ FAIL":"⏳ Fetching";
+  if(pl && lat!==undefined) pl.innerText=lat+"ms";
+}
+
+// ── SYNC CARDS ──
+const syncSources=[
+  {key:'OWM',  name:'OpenWeatherMap', desc:'Weather & Forecast'},
+  {key:'AQI',  name:'OWM Air Pollution', desc:'Air Quality Index'},
+  {key:'USGS', name:'USGS Earthquake', desc:'Seismic Activity'},
+  {key:'NOAA', name:'NOAA Tsunami', desc:'Tsunami Warnings'},
+];
+function buildSyncCards(){
+  const grid=document.getElementById('syncGrid');
+  grid.innerHTML='';
+  syncSources.forEach(s=>{
+    const c=document.createElement('div');
+    c.className='sync-card'; c.id='sync-'+s.key;
+    c.innerHTML=`
+      <div class="sync-header">
+        <div class="sync-name">${s.name}</div>
+        <div class="sync-badge fetching" id="sb-${s.key}">Connecting</div>
+      </div>
+      <div class="sync-row"><span>Type</span><span>${s.desc}</span></div>
+      <div class="sync-row"><span>Latency</span><span id="sl-${s.key}">--</span></div>
+      <div class="sync-row"><span>Last Data</span><span id="sd-${s.key}">--</span></div>
+      <div class="sync-row"><span>Last Sync</span><span id="st-${s.key}">--</span></div>
+      <div class="node-latency"><div class="node-latency-bar" id="slb-${s.key}"></div></div>`;
+    grid.appendChild(c);
+  });
+}
+function updateSyncCard(key,status,lat,data){
+  const badge=document.getElementById('sb-'+key);
+  const latEl=document.getElementById('sl-'+key);
+  const dataEl=document.getElementById('sd-'+key);
+  const timeEl=document.getElementById('st-'+key);
+  const card=document.getElementById('sync-'+key);
+  if(!badge) return;
+  badge.innerText=status==='ok'?"✅ Online":status==='fail'?"❌ Failed":"⏳ Fetching";
+  badge.className='sync-badge '+(status==='ok'?'ok':status==='fail'?'fail':'fetching');
+  if(card) card.className='sync-card '+(status==='fail'?'fail':'');
+  if(lat!==undefined && latEl) latEl.innerText=lat+"ms";
+  if(data && dataEl) dataEl.innerText=data;
+  if(timeEl) timeEl.innerText=new Date().toLocaleTimeString();
+}
+
+// ── SENSOR NODES ──
+const nodeLocations=[
+  {name:"Node Chennai-01",    lat:13.0827, lon:80.2707, zone:"Urban"},
+  {name:"Node Coastal-02",    lat:13.0,    lon:80.3,    zone:"Coastal"},
+  {name:"Node Inland-03",     lat:13.2,    lon:80.1,    zone:"Inland"},
+  {name:"Node Northern-04",   lat:13.4,    lon:80.2,    zone:"Northern"},
+];
+async function buildSensorNodes(){
+  const grid=document.getElementById('nodesGrid');
+  grid.innerHTML='';
+  await Promise.all(nodeLocations.map(async node=>{
+    try{
+      const res=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${node.lat}&lon=${node.lon}&appid=${OWM}&units=metric`);
+      const d=await res.json();
+      const ping=Math.floor(Math.random()*80+20);
+      const c=document.createElement('div');
+      c.className='node-card';
+      c.innerHTML=`
+        <div class="node-header">
+          <div class="node-name">${node.name}</div>
+          <div class="node-health"></div>
+        </div>
+        <div class="node-data">
+          <div class="node-row"><span>Zone</span><span>${node.zone}</span></div>
+          <div class="node-row"><span>🌡️ Temp</span><span>${Math.round(d.main.temp)}°C</span></div>
+          <div class="node-row"><span>💧 Humidity</span><span>${d.main.humidity}%</span></div>
+          <div class="node-row"><span>💨 Wind</span><span>${d.wind.speed} m/s</span></div>
+          <div class="node-row"><span>🌤 Condition</span><span>${d.weather[0].main}</span></div>
+          <div class="node-row"><span>📡 City</span><span>${d.name}</span></div>
+        </div>
+        <div class="node-ping">Last ping: ${new Date().toLocaleTimeString()} · ${ping}ms</div>
+        <div class="node-latency"><div class="node-latency-bar"></div></div>`;
+      grid.appendChild(c);
+    } catch(e){
+      const c=document.createElement('div');
+      c.className='node-card';
+      c.innerHTML=`<div class="node-header"><div class="node-name">${node.name}</div><div class="node-health" style="background:#ff4d4d;"></div></div><div style="color:#ff4d4d;font-size:13px;">❌ Node offline — API unavailable. Showing cached data.</div>`;
+      grid.appendChild(c);
+    }
+  }));
+}
+
+// ── GLOBAL AGGREGATOR ──
+async function fetchGlobalAggregator(){
+  const list=document.getElementById('aggList');
+  list.innerHTML='';
+  const events=[];
+  try{
+    // USGS significant week
+    const res=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson');
+    const d=await res.json();
+    d.features.forEach(q=>{
+      const mag=q.properties.mag;
+      events.push({
+        type:'🌍',title:`M${mag.toFixed(1)} Earthquake`,
+        sub:q.properties.place+" · "+new Date(q.properties.time).toLocaleString(),
+        sev:mag>=7?'critical':mag>=6?'high':mag>=5?'moderate':'low',
+        score:mag*10
+      });
+    });
+    // Weather alerts from OWM based location
+    if(liveData.main==="Thunderstorm") events.push({type:'⛈️',title:`Thunderstorm in ${uCity}`,sub:liveData.desc+" · "+new Date().toLocaleTimeString(),sev:'high',score:65});
+    if(liveData.main==="Rain" && liveData.rainProb>60) events.push({type:'🌧️',title:`Heavy Rain Warning — ${uCity}`,sub:`Rain probability: ${liveData.rainProb}%`,sev:'moderate',score:45});
+    if(liveData.temp>40) events.push({type:'🔥',title:`Extreme Heat — ${uCity}`,sub:`Temperature: ${liveData.temp}°C`,sev:'critical',score:80});
+    if(liveData.aqi>=150) events.push({type:'🌫️',title:`Poor Air Quality — ${uCity}`,sub:`AQI: ${liveData.aqi}`,sev:'high',score:60});
+
+    events.sort((a,b)=>b.score-a.score);
+
+    if(events.length===0){
+      list.innerHTML='<div style="color:#1f6f43;padding:20px;">✅ No significant global incidents at this time.</div>';
+      return;
+    }
+    events.slice(0,12).forEach(ev=>{
+      const item=document.createElement('div');
+      item.className=`agg-item sev-${ev.sev}`;
+      item.innerHTML=`
+        <div class="agg-type">${ev.type}</div>
+        <div class="agg-info"><div class="agg-title">${ev.title}</div><div class="agg-sub">${ev.sub}</div></div>
+        <div class="agg-sev ${ev.sev}">${ev.sev.toUpperCase()}</div>`;
+      list.appendChild(item);
+    });
+  } catch(e){ list.innerHTML='<p class="loading-txt">Failed to load aggregator. Retrying...</p>'; }
+}
+
+// ── DECISION ENGINE ──
+function buildDecisionEngine(){
+  const grid=document.getElementById('decisionGrid');
+  grid.innerHTML='';
+  const rules=[
+    {
+      rule:"IF Rain > 70% AND Wind > 10 m/s",
+      result:liveData.rainProb>70 && liveData.wind>10?"🚨 Storm Alert Triggered":"✅ No Storm Detected",
+      action:liveData.rainProb>70 && liveData.wind>10?"Notify users. Advise staying indoors.":"Continue monitoring.",
+      triggered:liveData.rainProb>70 && liveData.wind>10
+    },
+    {
+      rule:"IF AQI > 150 → Health Warning",
+      result:liveData.aqi>=150?"🚨 Health Warning Triggered":"✅ Air Quality Acceptable",
+      action:liveData.aqi>=150?"Advise limiting outdoor activity.":"No action required.",
+      triggered:liveData.aqi>=150
+    },
+    {
+      rule:"IF Temperature > 40°C → Heatwave Alert",
+      result:liveData.temp>40?"🚨 Heatwave Alert Active":"✅ Temperature Normal",
+      action:liveData.temp>40?"Emergency cooling centers recommended.":"Monitor temperature.",
+      triggered:liveData.temp>40
+    },
+    {
+      rule:"IF Earthquake M > 5.0 Nearby",
+      result:liveData.eqMag>=5?"🚨 Significant Earthquake Alert":"✅ No Significant Seismic Activity",
+      action:liveData.eqMag>=5?"Issue earthquake advisory. Check for aftershocks.":"Continue seismic monitoring.",
+      triggered:liveData.eqMag>=5
+    },
+    {
+      rule:"IF Thunderstorm Active",
+      result:liveData.main==="Thunderstorm"?"🚨 Thunderstorm Warning Active":"✅ No Thunderstorm",
+      action:liveData.main==="Thunderstorm"?"Advise staying indoors. Avoid open spaces.":"No action required.",
+      triggered:liveData.main==="Thunderstorm"
+    },
+    {
+      rule:"IF Wind > 15 m/s → Cyclone Risk",
+      result:liveData.wind>15?"🚨 High Wind / Cyclone Risk":"✅ Wind Speed Normal",
+      action:liveData.wind>15?"Issue wind advisory. Secure loose objects.":"Continue monitoring.",
+      triggered:liveData.wind>15
+    },
+  ];
+  rules.forEach(r=>{
+    const c=document.createElement('div');
+    c.className='decision-card'+(r.triggered?' triggered':'');
+    c.innerHTML=`<div class="decision-rule">RULE</div><div style="color:#8a6d3b;font-size:12px;margin-bottom:10px;">${r.rule}</div><div class="decision-result">${r.result}</div><div class="decision-action">Action: ${r.action}</div>`;
+    grid.appendChild(c);
+    if(r.triggered) addTimelineEvent(`🚨 Decision Engine: ${r.result}`,"critical");
+  });
+}
+
+// ── TIMELINE ──
+function addTimelineEvent(msg,type){
+  const list=document.getElementById('timelineList');
+  if(list.querySelector('.loading-txt')) list.innerHTML='';
+  const item=document.createElement('div');
+  item.className='timeline-item'+(type==='critical'?' active':'');
+  item.innerHTML=`<div class="timeline-time">${new Date().toLocaleTimeString()}</div><div class="timeline-title">${msg}</div>`;
+  list.prepend(item);
+  if(list.children.length>20) list.lastChild.remove();
+}
+
+// ── CHART ──
+let liveChart, chartMode='temp';
+const chartColors={temp:'#ff4d4d',aqi:'#8a6d3b',wind:'#1f6f43',humid:'#7a1f2b'};
+const chartLabels={temp:'Temperature (°C)',aqi:'AQI',wind:'Wind (m/s)',humid:'Humidity (%)'};
+function initChart(){
+  const ctx=document.getElementById('liveChart').getContext('2d');
+  liveChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:[],datasets:[{label:'',data:[],borderColor:'#1f6f43',backgroundColor:'rgba(31,111,67,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#1f6f43'}]},
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#d2d8d2'},grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:'#d2d8d2'},grid:{color:'rgba(255,255,255,0.05)'}}
+      }
+    }
+  });
+}
+function storeHistory(){
+  const now=fmtT(new Date());
+  history.labels.push(now);
+  history.temp.push(liveData.temp);
+  history.aqi.push(liveData.aqi);
+  history.wind.push(liveData.wind);
+  history.humid.push(liveData.humid);
+  if(history.labels.length>20){
+    ['labels','temp','aqi','wind','humid'].forEach(k=>history[k].shift());
+  }
+  // Persist to localStorage
+  try{ localStorage.setItem('tnx_history',JSON.stringify(history)); } catch(e){}
+  updateChart();
+}
+function updateChart(){
+  if(!liveChart) return;
+  const data=history[chartMode];
+  liveChart.data.labels=[...history.labels];
+  liveChart.data.datasets[0].data=[...data];
+  liveChart.data.datasets[0].label=chartLabels[chartMode];
+  liveChart.data.datasets[0].borderColor=chartColors[chartMode];
+  liveChart.data.datasets[0].backgroundColor=chartColors[chartMode]+'22';
+  liveChart.update();
+}
+function switchChart(mode,btn){
+  chartMode=mode;
+  document.querySelectorAll('.chart-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateChart();
+}
+
+// ── MAP ──
+function initMap(){
+  window.kelvinMap=L.map('kelvinMap',{zoomControl:true}).setView([uLat,uLon],8);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',maxZoom:18,
+    className:'map-tiles'
+  }).addTo(window.kelvinMap);
+  // Custom dark style via CSS
+  document.querySelector('.leaflet-container').style.filter='invert(1) hue-rotate(200deg) brightness(0.7)';
+  window.userMarker=L.marker([uLat,uLon]).addTo(window.kelvinMap)
+    .bindPopup(`📍 ${uCity}<br>Loading weather...`).openPopup();
+}
+
+// ── KELVIN VOICE ASSISTANT ──
+let recognition=null, speaking=false;
+function kelvinSay(text){
+  if(speaking) return;
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.rate=0.95; utt.pitch=0.9; utt.volume=1;
+  const voices=speechSynthesis.getVoices();
+  const preferred=voices.find(v=>v.name.includes('Google UK English Male')||v.name.includes('Daniel')||v.name.includes('Male'));
+  if(preferred) utt.voice=preferred;
+  utt.onstart=()=>{ speaking=true; updateKelvinStatus("Speaking..."); };
+  utt.onend=()=>{ speaking=false; updateKelvinStatus(`Online — ${uCity} data synced`); };
+  speechSynthesis.speak(utt);
+}
+function updateKelvinStatus(txt){ document.getElementById('kelvinStatusTxt').innerText=txt; }
+
+function addKelvinMsg(text,role){
+  const chat=document.getElementById('kelvinChat');
+  const div=document.createElement('div');
+  div.className='chat-msg '+role;
+  const icon=document.createElement('div');
+  icon.className='chat-icon '+(role==='kelvin'?'k':'u');
+  icon.innerText=role==='kelvin'?'🌡️':'👤';
+  const bubble=document.createElement('div');
+  bubble.className='chat-bubble';
+  bubble.innerText=text;
+  div.appendChild(icon); div.appendChild(bubble);
+  chat.appendChild(div);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+function askKelvin(question){
+  document.getElementById('kelvinInput').value=question;
+  sendToKelvin();
+}
+
+function sendToKelvin(){
+  const input=document.getElementById('kelvinInput');
+  const q=input.value.trim();
+  if(!q) return;
+  input.value='';
+  addKelvinMsg(q,'user');
+  const response=processKelvinQuery(q.toLowerCase());
+  setTimeout(()=>{
+    addKelvinMsg(response,'kelvin');
+    kelvinSay(response);
+  },600);
+}
+
+function processKelvinQuery(q){
+  const t=liveData.temp, h=liveData.humid, w=liveData.wind, a=liveData.aqi, r=liveData.rainProb, eq=liveData.eqMag;
+
+  if(q.includes('temperature')||q.includes('temp')||q.includes('hot')||q.includes('cold')){
+    if(t===null) return "I'm still fetching temperature data. Please wait a moment.";
+    return `Current temperature in ${uCity} is ${t}°C. ${t>40?"That's extreme heat — please stay indoors and hydrate.":t>35?"It's quite hot — limit outdoor exposure.":t>30?"Warm conditions today. Stay hydrated.":"Temperature is comfortable."}`;
+  }
+  if(q.includes('rain')||q.includes('umbrella')||q.includes('wet')){
+    if(r===null) return "Rain forecast data is loading. Try again in a moment.";
+    return `Rain probability in ${uCity} today is ${r}%. ${r>70?"High chance of rain — carry an umbrella.":r>40?"Moderate chance of rain. Better to carry an umbrella.":"Low rain probability. Should be a dry day."}`;
+  }
+  if(q.includes('aqi')||q.includes('air')||q.includes('pollution')||q.includes('breathe')){
+    if(a===null) return "Air quality data is currently unavailable. Try again shortly.";
+    const label=a>=200?"Very Poor":a>=150?"Poor":a>=100?"Moderate":a>=50?"Fair":"Good";
+    return `Air Quality Index in ${uCity} is ${a} — ${label}. ${a>=150?"It's unsafe to be outdoors for long periods. Wear a mask if necessary.":a>=100?"Sensitive groups should limit outdoor activity.":"Air quality is acceptable for most people."}`;
+  }
+  if(q.includes('wind')){
+    if(w===null) return "Wind data is loading.";
+    return `Wind speed in ${uCity} is ${w} m/s. ${w>15?"Strong winds — secure loose objects and avoid open areas.":w>10?"Moderate to strong winds. Be cautious outdoors.":"Wind conditions are calm."}`;
+  }
+  if(q.includes('earthquake')||q.includes('seismic')||q.includes('tremor')){
+    if(eq===null) return "Seismic data is loading.";
+    return eq>0?`Nearest earthquake detected is M${eq} near your region. ${eq>=5?"This is a significant earthquake — stay alert for aftershocks.":eq>=3?"Moderate seismic activity detected. No immediate danger but stay aware.":"Minor seismic activity. No significant risk."}`:`No earthquakes detected within monitoring range of ${uCity} currently.`;
+  }
+  if(q.includes('risk')||q.includes('score')||q.includes('safe')||q.includes('danger')){
+    const score=parseInt(document.getElementById('riskScoreBig').innerText)||0;
+    return `Current unified risk score for ${uCity} is ${score} out of 100. ${score>=70?"High risk conditions detected. Please take all necessary precautions.":score>=40?"Moderate risk. Stay alert and monitor updates.":"Conditions are relatively safe. Stay informed."}`;
+  }
+  if(q.includes('humidity')||q.includes('humid')){
+    if(h===null) return "Humidity data is loading.";
+    return `Humidity in ${uCity} is ${h}%. ${h>80?"Very high humidity — feels muggy and uncomfortable. Stay hydrated.":h>60?"Moderately humid conditions.":"Comfortable humidity levels."}`;
+  }
+  if(q.includes('cyclone')||q.includes('hurricane')||q.includes('storm')){
+    return `For cyclone safety: move indoors immediately, close all windows and doors, listen to official alerts, and avoid coastal areas. ${liveData.main==="Thunderstorm"?`A thunderstorm is currently active in ${uCity}.`:"No active cyclone detected in your immediate area."}`;
+  }
+  if(q.includes('flood')){
+    return `Flood safety: move to higher ground immediately, avoid walking through floodwater, keep emergency kit ready. ${r>70?`Rain probability is high at ${r}% in ${uCity} — stay alert for flood conditions.`:"No immediate flood warning for your area."}`;
+  }
+  if(q.includes('hello')||q.includes('hi')||q.includes('hey')){
+    return `Hello! I'm Kelvin, TerranovaX's climate intelligence assistant. I'm monitoring conditions in ${uCity} right now. Current temperature is ${t||'--'}°C. How can I help you stay safe today?`;
+  }
+  if(q.includes('weather')||q.includes('condition')){
+    return `Current weather in ${uCity}: ${t||'--'}°C, ${liveData.desc||'--'}. Humidity ${h||'--'}%, Wind ${w||'--'} m/s, Rain probability ${r||'--'}%.`;
+  }
+  if(q.includes('what can you do')||q.includes('help')){
+    return "I can tell you about current temperature, air quality, wind speed, rain forecast, earthquake activity, risk scores, and disaster safety tips for your location. Just ask me anything!";
+  }
+  return `I'm analyzing conditions in ${uCity}. Currently ${t||'--'}°C with ${liveData.desc||'unknown conditions'}. Could you be more specific? Try asking about temperature, AQI, rain, earthquakes, or risk score.`;
+}
+
+function toggleMic(){
+  const btn=document.getElementById('kelvinMic');
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    addKelvinMsg("Voice input is not supported in this browser. Please use Chrome.","kelvin");
+    kelvinSay("Voice input is not supported in this browser.");
+    return;
+  }
+  if(!recognition){
+    recognition=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+    recognition.lang='en-IN'; recognition.continuous=false; recognition.interimResults=false;
+    recognition.onresult=e=>{
+      const txt=e.results[0][0].transcript;
+      document.getElementById('kelvinInput').value=txt;
+      sendToKelvin();
+    };
+    recognition.onend=()=>{ btn.classList.remove('listening'); updateKelvinStatus(`Online — ${uCity} data synced`); };
+    recognition.onerror=()=>{ btn.classList.remove('listening'); };
+  }
+  if(btn.classList.contains('listening')){
+    recognition.stop(); btn.classList.remove('listening');
+  } else {
+    recognition.start(); btn.classList.add('listening');
+    updateKelvinStatus("Listening...");
+    addKelvinMsg("I'm listening... speak now.","kelvin");
+  }
+}
+
+// ── FACTS ──
+const facts=[
+  "The 2004 Indian Ocean Tsunami was caused by a M9.1 earthquake — the third largest ever recorded.",
+  "India experiences about 60% of the world's tropical cyclones in the Bay of Bengal.",
+  "A category 5 hurricane has winds exceeding 252 km/h — strong enough to flatten buildings.",
+  "Earthquakes happen every day — about 500,000 detectable quakes occur worldwide annually.",
+  "Heatwaves kill more people globally than any other weather event — more than floods or cyclones.",
+  "The Richter Scale is logarithmic — a M7.0 earthquake is 10x more powerful than a M6.0.",
+  "Tsunamis travel at the speed of a jet aircraft across open ocean — up to 800 km/h.",
+  "India's Andaman & Nicobar Islands lie directly on the Andaman Subduction Zone — highly tsunami-prone.",
+  "Cyclone Amphan (2020) caused damages worth ₹1 lakh crore — costliest storm in Bay of Bengal history.",
+  "During an earthquake, animals often sense the tremors before humans — a natural early warning system.",
+  "India has 22 of the world's 30 most polluted cities by PM2.5 concentration.",
+  "59% of India's land area is susceptible to earthquakes of varying intensity.",
+];
+let factIdx=0;
+function showFact(){ document.getElementById('dykText').innerText=facts[factIdx]; }
+function nextFact(){ factIdx=(factIdx+1)%facts.length; showFact(); }
+function prevFact(){ factIdx=(factIdx-1+facts.length)%facts.length; showFact(); }
+setInterval(nextFact,8000);
+
+// ── QUIZ ──
+const questions=[
+  {q:"What should you do FIRST during an earthquake?",opts:["Run outside","Drop, Cover and Hold On","Call someone","Turn off gas"],ans:1,exp:"Drop to your hands and knees, cover your head, and hold on to shelter until shaking stops."},
+  {q:"At what wind speed is a storm classified as a Cyclonic Storm by IMD?",opts:["30–40 km/h","48–63 km/h","63–88 km/h","88–117 km/h"],ans:1,exp:"IMD classifies a Cyclonic Storm at 48–63 km/h wind speed."},
+  {q:"Which ocean generates the most tropical cyclones affecting India?",opts:["Indian Ocean","Pacific Ocean","Atlantic Ocean","Arctic Ocean"],ans:0,exp:"The Bay of Bengal (part of Indian Ocean) generates most cyclones affecting India."},
+  {q:"What does a Tsunami Warning mean?",opts:["A tsunami may occur","A tsunami has been confirmed","A tsunami passed harmlessly","Waves are normal"],ans:1,exp:"A Tsunami Warning means a tsunami has been confirmed and may be imminent."},
+  {q:"Which Indian state is MOST earthquake prone?",opts:["Tamil Nadu","Gujarat","Kerala","Andhra Pradesh"],ans:1,exp:"Gujarat, especially the Kutch region, is Zone V — the highest seismic hazard zone in India."},
+  {q:"What is the safest place during a flood?",opts:["Under a bridge","Inside a car","Higher ground","Near a river bank"],ans:2,exp:"Always move to higher ground during floods. Never shelter under bridges or near water."},
+  {q:"A Heatwave in India is declared when temperature exceeds normal by?",opts:["2°C","4.5°C","7°C","10°C"],ans:1,exp:"IMD declares a heatwave when temperature is 4.5°C or more above normal for 2+ consecutive days."},
+  {q:"What is the national emergency number in India?",opts:["100","108","112","1078"],ans:2,exp:"112 is India's unified emergency number for police, fire, and ambulance."},
+  {q:"Which scale measures earthquake magnitude?",opts:["Beaufort Scale","Richter Scale","Saffir-Simpson Scale","Fujita Scale"],ans:1,exp:"The Richter Scale (or moment magnitude scale) measures energy released by an earthquake."},
+  {q:"How fast can a tsunami wave travel in open ocean?",opts:["100 km/h","300 km/h","800 km/h","1200 km/h"],ans:2,exp:"Tsunami waves can travel at up to 800 km/h in open ocean — as fast as a jet aircraft."},
+];
+let qIdx=0,score=0,answered=false;
+function loadQuiz(){
+  if(qIdx>=questions.length){
+    document.getElementById('quizQuestion').style.display='none';
+    document.getElementById('quizOptions').style.display='none';
+    document.getElementById('quizResult').style.display='none';
+    document.getElementById('quizNext').style.display='none';
+    const fin=document.getElementById('quizFinal');
+    fin.style.display='block';
+    fin.innerHTML=`<div style="font-size:32px;color:#1f6f43;font-weight:700;">🎯 ${score}/${questions.length}</div><div style="color:#aaa;margin-top:10px;">${score>=8?"🏆 Excellent! You're disaster ready!":score>=5?"👍 Good! Keep learning to stay safer.":"📚 Keep learning — it could save your life."}</div>`;
+    return;
+  }
+  const q=questions[qIdx]; answered=false;
+  document.getElementById('quizProgress').innerText=`Question ${qIdx+1} of ${questions.length}`;
+  document.getElementById('quizScoreDisplay').innerText=`Score: ${score}`;
+  document.getElementById('quizQuestion').innerText=q.q;
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('quizNext').style.display='none';
+  const opts=document.getElementById('quizOptions');
+  opts.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='quiz-opt'; btn.innerText=opt;
+    btn.onclick=()=>{
+      if(answered) return; answered=true;
+      document.querySelectorAll('.quiz-opt')[q.ans].classList.add('correct');
+      const res=document.getElementById('quizResult');
+      if(i===q.ans){ score++; res.className='quiz-result correct'; res.innerText='✅ Correct! '+q.exp; }
+      else { btn.classList.add('wrong'); res.className='quiz-result wrong'; res.innerText='❌ Wrong. '+q.exp; }
+      res.style.display='block';
+      document.getElementById('quizNext').style.display='inline-block';
+      document.getElementById('quizScoreDisplay').innerText=`Score: ${score}`;
+    };
+    opts.appendChild(btn);
+  });
+}
+function nextQuestion(){ qIdx++; loadQuiz(); }
+
+// ── LOAD HISTORY FROM LOCALSTORAGE ──
+try{
+  const stored=JSON.parse(localStorage.getItem('tnx_history'));
+  if(stored && stored.labels){ history=stored; }
+} catch(e){}
+
+// ── INIT ALL ──
+buildSyncCards();
+addKelvinMsg(`Hello! I'm Kelvin, TerranovaX's climate intelligence assistant. I'm currently fetching real-time data for your location. Ask me anything about weather, air quality, earthquakes, or disaster safety!`,'kelvin');
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome | TerranovaX</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+
+/* 🌌 YOUR ORIGINAL TERRANOVAX BACKGROUND */
+body{
+background:
+radial-gradient(circle at 20% 30%, rgba(31,111,67,0.3), transparent 40%),
+radial-gradient(circle at 80% 60%, rgba(122,31,43,0.3), transparent 40%),
+#050807;
+color:#d2d8d2;
+overflow-x:hidden;
+}
+
+body::before{
+content:"";
+position:fixed;
+width:100%;
+height:100%;
+background:
+radial-gradient(circle at 20% 30%, rgba(31,111,67,0.15), transparent 40%),
+radial-gradient(circle at 80% 70%, rgba(122,31,43,0.15), transparent 40%);
+z-index:-1;
+animation:bgMove 10s infinite alternate;
+}
+
+@keyframes bgMove{
+0%{background-position:0% 0%}
+100%{background-position:100% 100%}
+}
+
+/* HERO */
+.hero{
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+padding:20px;
+}
+
+.hero h1{
+font-size:52px;
+margin-bottom:20px;
+}
+
+.welcome{color:#7a1f2b;}
+.brand{color:#1f6f43;}
+
+.hero p{
+max-width:650px;
+color:#9aa29a;
+line-height:1.7;
+margin-bottom:35px;
+}
+
+/* BUTTONS */
+.btns{
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.btn{
+padding:14px 26px;
+border-radius:8px;
+border:none;
+cursor:pointer;
+font-weight:600;
+transition:0.3s;
+}
+
+.primary{background:#1f6f43;color:white;}
+.secondary{background:transparent;border:1px solid #7a1f2b;color:#7a1f2b;}
+
+.btn:hover{transform:translateY(-4px);}
+.primary:hover{box-shadow:0 0 20px rgba(31,111,67,0.6);}
+.secondary:hover{background:#7a1f2b;color:white;}
+
+/* SECTION */
+.section{padding:90px 10%;}
+
+.section h2{
+text-align:center;
+margin-bottom:50px;
+font-size:32px;
+color:#1f6f43;
+}
+
+/* GRID */
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:25px;
+}
+
+/* CARD */
+.card{
+background:rgba(30,30,30,0.4);
+padding:25px;
+border-radius:12px;
+border-left:4px solid #1f6f43;
+transition:0.3s;
+}
+
+.card:hover{
+border-left:4px solid #7a1f2b;
+transform:translateY(-5px);
+}
+
+.card h3{color:white;margin-bottom:10px;}
+.card p{color:#aaa;font-size:14px;}
+
+/* 🔥 TIMELINE */
+.timeline{
+max-width:700px;
+margin:auto;
+display:flex;
+flex-direction:column;
+gap:25px;
+}
+
+.step{
+padding:20px;
+border-left:3px solid #1f6f43;
+position:relative;
+}
+
+.step::before{
+content:'';
+position:absolute;
+left:-7px;
+top:20px;
+width:12px;
+height:12px;
+background:#1f6f43;
+border-radius:50%;
+}
+
+/* 📊 DATA STRIP */
+.data-strip{
+display:flex;
+justify-content:center;
+gap:40px;
+margin-top:30px;
+flex-wrap:wrap;
+}
+
+.data-box span{
+display:block;
+font-size:28px;
+font-weight:bold;
+}
+
+.green{color:#1f6f43;}
+.red{color:#ff4d4d;}
+.brown{color:#8a6d3b;}
+
+/* MOBILE */
+@media(max-width:768px){
+.hero h1{font-size:32px;}
+}
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>
+    <span class="welcome">WELCOME TO</span><br>
+    <span class="brand">TERRANOVAX</span>
+  </h1>
+
+  <p>
+    A powerful AI-driven disaster intelligence platform that monitors real-world conditions,
+    predicts risks, and helps you act before it’s too late.
+  </p>
+
+  <div class="btns">
+    <button class="btn primary" onclick="start()">Get Started</button>
+    <button class="btn secondary" onclick="login()">Already have an account? Login</button>
+  </div>
+</section>
+<!-- 🔥 WHAT USER GETS -->
+<section class="section">
+  <h2>What You Unlock</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Personalized Alerts</h3>
+      <p>Receive alerts tailored specifically to your location.</p>
+    </div>
+    <div class="card">
+      <h3>Visual Heatmaps</h3>
+      <p>Understand disaster zones through interactive maps.</p>
+    </div>
+    <div class="card">
+      <h3>Predictive Insights</h3>
+      <p>Know what might happen before it actually does.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 🔥 HOW SYSTEM WORKS -->
+<section class="section">
+  <h2>How The System Works</h2>
+  <div class="timeline">
+    <div class="step">
+      <h3>Live Data Capture</h3>
+      <p>We continuously gather environmental and disaster-related data globally.</p>
+    </div>
+    <div class="step">
+      <h3>AI Risk Detection</h3>
+      <p>Our AI detects patterns and identifies potential threats instantly.</p>
+    </div>
+    <div class="step">
+      <h3>Smart Alerts</h3>
+      <p>You receive alerts based on your region and risk level in real time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 🔥 LIVE IMPACT -->
+<section class="section">
+  <h2>Global Impact Snapshot</h2>
+  <div class="data-strip">
+    <div class="data-box">
+      Active Alerts
+      <span class="red">128</span>
+    </div>
+    <div class="data-box">
+      Safe Zones
+      <span class="green">342</span>
+    </div>
+    <div class="data-box">
+      High Risk Areas
+      <span class="brown">76</span>
+    </div>
+  </div>
+</section>
+
+<!-- 🔥 WHY TRUST -->
+<section class="section">
+  <h2>Why Trust TerranovaX?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Data-Driven</h3>
+      <p>Every alert is backed by real data and analysis.</p>
+    </div>
+    <div class="card">
+      <h3>Fast Response</h3>
+      <p>Information is delivered instantly without delays.</p>
+    </div>
+    <div class="card">
+      <h3>User-Focused</h3>
+      <p>Designed to help YOU stay safe and informed.</p>
+    </div>
+  </div>
+</section>
+<!-- SECTION 2 -->
+<section class="section">
+  <h2>What You Can Do</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Stay Informed</h3>
+      <p>Receive instant alerts and updates on disasters near you.</p>
+    </div>
+    <div class="card">
+      <h3>Analyze Trends</h3>
+      <p>Understand patterns and predict future risks using visual data.</p>
+    </div>
+    <div class="card">
+      <h3>Act Fast</h3>
+      <p>Use insights to take immediate and informed safety actions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3 -->
+<section class="section">
+  <h2>Built for Everyone</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Citizens</h3>
+      <p>Stay safe with real-time alerts and safety guidance.</p>
+    </div>
+    <div class="card">
+      <h3>Researchers</h3>
+      <p>Analyze disaster data and trends for better insights.</p>
+    </div>
+    <div class="card">
+      <h3>Authorities</h3>
+      <p>Improve response strategies with intelligent monitoring tools.</p>
+    </div>
+  </div>
+</section>
+
+
+<script>
+function start(){
+  window.location.href = "signup.html";
+}
+
+function login(){
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>

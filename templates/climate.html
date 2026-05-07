@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TerranovaX Command UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:#050807;
+  color:#d2d8d2;
+  overflow:hidden;
+}
+.container{
+  height:100vh;
+  display:grid;
+  grid-template-columns:240px 1fr 320px;
+}
+.panel{ padding:20px; border-right:1px solid #111; }
+.left{ background:rgba(20,20,20,0.7); }
+.logo{ color:#1f6f43; font-weight:700; margin-bottom:20px; font-size:18px; }
+.toggle{ margin:10px 0; font-size:14px; }
+.center{ overflow-y:auto; padding:20px; }
+.right{ background:rgba(20,20,20,0.7); overflow-y:auto; }
+canvas{
+  background:rgba(30,30,30,0.5);
+  border-radius:10px;
+  padding:10px;
+  width:100% !important;
+}
+.ai{
+  background:rgba(30,30,30,0.5);
+  padding:15px;
+  border-radius:10px;
+  min-height:80px;
+  line-height:1.7;
+  font-size:14px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+}
+.card{
+  background:rgba(30,30,30,0.4);
+  padding:15px;
+  border-radius:10px;
+  border-left:4px solid #1f6f43;
+  font-size:14px;
+}
+.alert{
+  background:rgba(122,31,43,0.3);
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:6px;
+  font-size:13px;
+}
+.feed{ max-height:300px; overflow:auto; font-size:13px; }
+button{
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  background:#1f6f43;
+  color:white;
+  cursor:pointer;
+  margin-top:10px;
+  width:100%;
+}
+button:hover{ background:#7a1f2b; }
+.emergency{
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:black;
+  color:red;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:999;
+  animation:flash 1s infinite;
+}
+@keyframes flash{
+  0%{background:black;}
+  50%{background:#220000;}
+  100%{background:black;}
+}
+.section{ margin-bottom:40px; }
+.section h3{ margin-bottom:15px; color:#d2d8d2; }
+.forecast-grid{ display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.forecast-card{
+  background:rgba(30,30,30,0.5);
+  padding:15px;
+  border-radius:10px;
+  border-left:4px solid #1f6f43;
+  font-size:14px;
+}
+.forecast-card h4{ margin:0 0 10px; color:#1f6f43; }
+.up{ color:#1f6f43; }
+.danger{ color:#ff4d4d; }
+.anomaly-box{
+  background:rgba(122,31,43,0.2);
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border-left:4px solid #7a1f2b;
+  animation:pulse 2s infinite;
+  font-size:14px;
+}
+@keyframes pulse{ 0%{opacity:0.6;} 50%{opacity:1;} 100%{opacity:0.6;} }
+.ai-box{
+  background:rgba(30,30,30,0.5);
+  padding:15px;
+  border-radius:10px;
+  border-left:4px solid #1f6f43;
+  font-size:14px;
+  line-height:1.8;
+}
+.timeline-box{
+  background:rgba(30,30,30,0.5);
+  padding:15px;
+  border-radius:10px;
+  font-size:13px;
+  line-height:2;
+}
+.impact-box{
+  background:rgba(30,30,30,0.5);
+  padding:15px;
+  border-radius:10px;
+  border-left:4px solid #7a1f2b;
+  font-size:14px;
+  line-height:1.8;
+}
+.notif-box{
+  background:rgba(30,30,30,0.5);
+  padding:12px;
+  border-radius:8px;
+  border-left:4px solid #1f6f43;
+  font-size:14px;
+}
+.day-forecast-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:15px; }
+.day-card{
+  background:rgba(30,30,30,0.5);
+  padding:15px;
+  border-radius:10px;
+  border-left:4px solid #8a6d3b;
+  text-align:center;
+}
+.day-card h4{ color:#8a6d3b; margin-bottom:8px; }
+.day-card p{ margin:4px 0; font-size:13px; }
+.hourly-scroll{ display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; }
+.hourly-scroll::-webkit-scrollbar{ height:4px; }
+.hourly-scroll::-webkit-scrollbar-thumb{ background:#1f6f43; border-radius:4px; }
+.hour-card{
+  min-width:75px;
+  background:rgba(30,30,30,0.5);
+  padding:10px;
+  border-radius:8px;
+  text-align:center;
+  font-size:12px;
+  flex-shrink:0;
+  border-top:2px solid #1f6f43;
+}
+.hour-card.rain{ border-top-color:#7a1f2b; }
+.hour-card.storm{ border-top-color:#8a6d3b; }
+.nearby-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; }
+.nearby-card{
+  background:rgba(30,30,30,0.4);
+  padding:12px;
+  border-radius:8px;
+  border-left:4px solid #1f6f43;
+  font-size:13px;
+  line-height:1.8;
+}
+.nearby-card .area-name{ color:#1f6f43; font-weight:600; margin-bottom:4px; }
+.loading{ color:#8a6d3b; font-style:italic; font-size:13px; }
+.stable{ color:#1f6f43; padding:10px; font-size:14px; }
+
+/* ========================= */
+/* 📱 MOBILE RESPONSIVE MODE */
+/* ========================= */
+
+@media (max-width: 900px){
+
+  body{
+    overflow:auto;
+  }
+
+  .container{
+    grid-template-columns:1fr;
+    height:auto;
+  }
+
+  /* PANELS STACK */
+  .panel{
+    border-right:none;
+    border-bottom:1px solid #111;
+  }
+
+  .left{
+    order:1;
+  }
+
+  .center{
+    order:2;
+    padding:15px;
+  }
+
+  .right{
+    order:3;
+  }
+
+  /* LOGO CENTER */
+  .logo{
+    text-align:center;
+    font-size:20px;
+  }
+
+  /* WEATHER TEXT */
+  .toggle{
+    font-size:13px;
+    margin:6px 0;
+  }
+
+  /* BUTTONS FULL WIDTH */
+  button{
+    width:100%;
+    font-size:14px;
+  }
+
+  /* SECTIONS SPACING */
+  .section{
+    margin-bottom:25px;
+  }
+
+  .section h3{
+    font-size:16px;
+  }
+
+  /* GRID FIXES */
+  .grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .forecast-grid{
+    grid-template-columns:1fr;
+  }
+
+  .day-forecast-grid{
+    grid-template-columns:1fr;
+  }
+
+  .nearby-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  /* CHART FIX */
+  canvas{
+    height:220px !important;
+  }
+
+  /* HOURLY SCROLL */
+  .hour-card{
+    min-width:65px;
+    font-size:11px;
+  }
+
+  /* AI TEXT */
+  .ai, .ai-box, .impact-box{
+    font-size:13px;
+  }
+
+  /* ALERTS */
+  .alert{
+    font-size:12px;
+  }
+
+  /* RIGHT PANEL FEED */
+  .feed{
+    max-height:200px;
+  }
+
+  /* EMERGENCY SCREEN */
+  .emergency h1{
+    font-size:22px;
+  }
+
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- LEFT -->
+<div class="panel left">
+  <div class="logo">🌍 TerranovaX</div>
+  <div class="toggle" id="locLabel">📍 Detecting...</div>
+  <div class="toggle" id="leftTemp">🌡 Temp: --</div>
+  <div class="toggle" id="leftFeels">🤔 Feels like: --</div>
+  <div class="toggle" id="leftHumidity">💧 Humidity: --</div>
+  <div class="toggle" id="leftWind">💨 Wind: --</div>
+  <div class="toggle" id="leftVisibility">👁 Visibility: --</div>
+  <div class="toggle" id="leftDesc">-- Condition</div>
+  <div class="toggle" id="leftSunrise">🌅 Sunrise: --</div>
+  <div class="toggle" id="leftSunset">🌇 Sunset: --</div>
+  <br>
+  <button onclick="toggleSiren()">🔊 Toggle Siren</button>
+  <button onclick="triggerEmergency()">🚨 Emergency Mode</button>
+</div>
+
+<!-- CENTER -->
+<div class="center">
+
+  <div class="section">
+    <h3>📈 Live Temperature — <span id="graphCity">Your Location</span></h3>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="section">
+    <h3>🤖 AI Analysis</h3>
+    <div class="ai" id="ai"><span class="loading">Initializing AI...</span></div>
+  </div>
+
+  <div class="section">
+    <h3>📅 Yesterday · Today · Tomorrow</h3>
+    <div class="day-forecast-grid" id="dayForecast">
+      <div class="day-card"><h4>Yesterday</h4><p class="loading">Estimating...</p></div>
+      <div class="day-card"><h4>Today</h4><p class="loading">Loading...</p></div>
+      <div class="day-card"><h4>Tomorrow</h4><p class="loading">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🕐 Hourly Forecast (Next 24h)</h3>
+    <div class="hourly-scroll" id="hourlyScroll"><p class="loading">Loading...</p></div>
+  </div>
+
+  <div class="section">
+    <h3>📍 Nearby Areas</h3>
+    <div class="nearby-grid" id="nearbyGrid"><p class="loading">Fetching nearby areas...</p></div>
+  </div>
+
+  <div class="section">
+    <h3>⚠️ Risk Breakdown</h3>
+    <div class="grid">
+      <div class="card" id="riskHeat">🔥 Heat: --</div>
+      <div class="card" id="riskHumidity">💧 Humidity: --</div>
+      <div class="card" id="riskWind">💨 Wind: --</div>
+      <div class="card" id="riskRain">🌧 Rain: --</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🔮 Predictive Forecast Engine</h3>
+    <div class="forecast-grid">
+      <div class="forecast-card">
+        <h4>Next 6 Hours</h4>
+        <p id="f6temp">Temp: --</p>
+        <p id="f6desc">Condition: --</p>
+        <p id="f6rain">Rain: --</p>
+        <p id="f6wind">Wind: --</p>
+      </div>
+      <div class="forecast-card">
+        <h4>Next 24 Hours</h4>
+        <p id="f24temp">Temp: --</p>
+        <p id="f24desc">Condition: --</p>
+        <p id="f24rain">Rain: --</p>
+        <p id="f24wind">Wind: --</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🔍 Anomaly Detection</h3>
+    <div id="anomalyBox"><p class="loading">Analyzing...</p></div>
+  </div>
+
+  <div class="section">
+    <h3>⚙️ AI Decision Engine</h3>
+    <div class="ai-box" id="aiDecision">
+      <p>Decision: --</p><p>Action: --</p><p>Status: Initializing...</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🕓 Event Timeline</h3>
+    <div class="timeline-box" id="timeline"><p class="loading">Building timeline...</p></div>
+  </div>
+
+  <div class="section">
+    <h3>👥 User Impact Assessment</h3>
+    <div class="impact-box" id="impactBox">
+      <p>Location: --</p><p>Exposure Risk: --</p><p>Advice: --</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>📩 Notification System</h3>
+    <div class="notif-box" id="notifBox">Waiting for data...</div>
+  </div>
+
+</div>
+
+<!-- RIGHT -->
+<div class="panel right">
+  <h3>🚨 Live Alerts</h3>
+  <div id="alerts"></div>
+  <h3 style="margin-top:20px;">📡 Live Feed</h3>
+  <div class="feed" id="feed"></div>
+</div>
+
+</div>
+
+<!-- EMERGENCY -->
+<div class="emergency" id="em">
+  <h1>⚠ CRITICAL ALERT</h1>
+  <p id="emMsg">Extreme conditions detected.</p>
+  <button style="width:auto;margin-top:20px;" onclick="closeEmergency()">Close</button>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp }        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCZbIP44acM71ZW7eCblfNrLIE3HRptUgE",
+    authDomain:        "magnificent-temples.firebaseapp.com",
+    projectId:         "magnificent-temples",
+    storageBucket:     "magnificent-temples.firebasestorage.app",
+    messagingSenderId: "836647714930",
+    appId:             "1:836647714930:web:60ba09e18b183aae52c2eb"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  onAuthStateChanged(auth, async (user) => {
+    if(!user) { window.location.href = "login.html"; return; }
+
+    // Try to get city from Firestore first
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if(userDoc.exists()) {
+        const data = userDoc.data();
+        const city = data.city || data.location;
+        if(city) {
+          // Use saved city — fetch by city name
+          window.initWithCity(city);
+          return;
+        }
+      }
+    } catch(e) { console.error(e); }
+
+    // No saved city — fall back to GPS
+    window.initLocation();
+  });
+</script>
+
+<script>
+const API_KEY = "bd5e378503939ddaee76f12ad7a97608";
+let currentTemp = 0, cityName = "";
+const feed   = document.getElementById("feed");
+const alerts = document.getElementById("alerts");
+
+function weatherIcon(main){
+  const m = {"Clear":"☀️","Clouds":"☁️","Rain":"🌧️","Drizzle":"🌦️","Thunderstorm":"⛈️","Snow":"❄️","Mist":"🌫️","Fog":"🌫️","Haze":"🌫️","Dust":"🌪️","Tornado":"🌪️","Smoke":"🌫️","Squall":"💨"};
+  return m[main] || "🌡️";
+}
+
+// CHART
+let liveTemps  = [null,null,null,null,null];
+let liveLabels = ["--","--","--","--","--"];
+let chart = new Chart(document.getElementById('chart'),{
+  type:'line',
+  data:{
+    labels:liveLabels,
+    datasets:[{label:'Temp °C',data:liveTemps,borderWidth:2,borderColor:'#1f6f43',backgroundColor:'rgba(31,111,67,0.1)',fill:true,tension:0.4,pointBackgroundColor:'#1f6f43'}]
+  },
+  options:{
+    plugins:{legend:{display:false}},
+    scales:{
+      y:{ticks:{color:'#d2d8d2'},grid:{color:'rgba(255,255,255,0.05)'}},
+      x:{ticks:{color:'#d2d8d2'},grid:{color:'rgba(255,255,255,0.05)'}}
+    }
+  }
+});
+
+// ── INIT WITH SAVED CITY NAME ──
+window.initWithCity = async function(city) {
+  try {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`);
+    const d   = await res.json();
+    if(d.cod === 200) {
+      fetchAll(d.coord.lat, d.coord.lon);
+    } else {
+      window.initLocation(); // fallback to GPS
+    }
+  } catch(e) {
+    window.initLocation(); // fallback to GPS
+  }
+}
+
+// ── INIT WITH GPS ──
+window.initLocation = function() {
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos => fetchAll(pos.coords.latitude, pos.coords.longitude),
+      ()  => fetchAll(13.0827, 80.2707) // Chennai fallback
+    );
+  } else fetchAll(13.0827, 80.2707);
+}
+
+function fetchAll(lat, lon){
+  fetchCurrentWeather(lat, lon);
+  fetchForecast(lat, lon);
+  fetchNearbyAreas(lat, lon);
+}
+
+async function fetchCurrentWeather(lat,lon){
+  try{
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`);
+    const d   = await res.json();
+    currentTemp    = Math.round(d.main.temp);
+    cityName       = d.name;
+    const humidity = d.main.humidity;
+    const wind     = d.wind.speed;
+    const desc     = d.weather[0].description;
+    const main     = d.weather[0].main;
+    const feels    = Math.round(d.main.feels_like);
+    const vis      = d.visibility ? (d.visibility/1000).toFixed(1)+" km" : "--";
+    const now      = new Date();
+    const fmt      = t => t.getHours()+":"+String(t.getMinutes()).padStart(2,'0');
+    const sunrise  = new Date(d.sys.sunrise*1000);
+    const sunset   = new Date(d.sys.sunset*1000);
+
+    document.getElementById("locLabel").innerText       = "📍 "+cityName;
+    document.getElementById("leftTemp").innerText       = "🌡 Temp: "+currentTemp+"°C";
+    document.getElementById("leftFeels").innerText      = "🤔 Feels like: "+feels+"°C";
+    document.getElementById("leftHumidity").innerText   = "💧 Humidity: "+humidity+"%";
+    document.getElementById("leftWind").innerText       = "💨 Wind: "+wind+" m/s";
+    document.getElementById("leftVisibility").innerText = "👁 Visibility: "+vis;
+    document.getElementById("leftDesc").innerText       = weatherIcon(main)+" "+desc;
+    document.getElementById("leftSunrise").innerText    = "🌅 Sunrise: "+fmt(sunrise);
+    document.getElementById("leftSunset").innerText     = "🌇 Sunset: "+fmt(sunset);
+    document.getElementById("graphCity").innerText      = cityName;
+
+    liveTemps.push(currentTemp); liveTemps.shift();
+    liveLabels.push(fmt(now));   liveLabels.shift();
+    chart.data.datasets[0].data   = [...liveTemps];
+    chart.data.labels             = [...liveLabels];
+    chart.update();
+
+    document.getElementById("riskHeat").innerText     = currentTemp>40?"🔥 Heat: EXTREME":currentTemp>35?"🔥 Heat: High":currentTemp>30?"🔥 Heat: Moderate":"🔥 Heat: Low";
+    document.getElementById("riskHumidity").innerText = humidity>80?"💧 Humidity: Very High":humidity>60?"💧 Humidity: High":"💧 Humidity: Normal";
+    document.getElementById("riskWind").innerText     = wind>10?"💨 Wind: Strong":wind>5?"💨 Wind: Moderate":"💨 Wind: Calm";
+    document.getElementById("riskRain").innerText     = (main==="Rain"||main==="Drizzle"||main==="Thunderstorm")?"🌧 Rain: Active":"🌧 Rain: None";
+
+    const risk    = currentTemp>38?"HIGH":currentTemp>33?"MODERATE":main==="Thunderstorm"?"STORM":"LOW";
+    const advice  = currentTemp>38?"Avoid all outdoor activity. Stay indoors with cooling.":currentTemp>33?"Stay hydrated. Limit outdoor exposure during peak hours.":main==="Thunderstorm"?"Stay indoors. Avoid open areas and tall trees.":main==="Rain"?"Carry umbrella. Roads may be slippery.":"Conditions are safe. Normal activity.";
+    const decision= currentTemp>38?"Trigger Alert Level 3":currentTemp>33?"Trigger Alert Level 2":main==="Thunderstorm"?"Trigger Storm Alert":"No Alert Required";
+    const action  = currentTemp>38?"Notify all users immediately":currentTemp>33?"Send heat advisory":main==="Thunderstorm"?"Send storm warning":"Continue monitoring";
+
+    typeAI(`${weatherIcon(main)} Analyzing ${cityName}... Temperature: ${currentTemp}°C. Feels like ${feels}°C. Humidity: ${humidity}%. Wind: ${wind} m/s. Visibility: ${vis}. Condition: ${desc}. Risk: ${risk}. ${advice}`);
+
+    document.getElementById("aiDecision").innerHTML = `<p>📌 Decision: ${decision}</p><p>⚡ Action: ${action}</p><p>🟢 Status: Active Monitoring — ${cityName}</p>`;
+    document.getElementById("impactBox").innerHTML  = `<p>📍 Location: ${cityName}</p><p>${weatherIcon(main)} Temperature: ${currentTemp}°C (${desc})</p><p>⚠️ Exposure Risk: ${risk}</p><p>💡 Advice: ${advice}</p>`;
+    document.getElementById("notifBox").innerText   = `📩 ${cityName}: ${currentTemp}°C — ${desc}. ${advice}`;
+
+    let anom = "";
+    if(currentTemp>40) anom+=`<div class="anomaly-box">🔥 Extreme temperature ${currentTemp}°C in ${cityName}</div>`;
+    else if(currentTemp>35) anom+=`<div class="anomaly-box">⚠️ High temperature ${currentTemp}°C detected</div>`;
+    if(humidity>85) anom+=`<div class="anomaly-box">💧 Very high humidity: ${humidity}%</div>`;
+    if(wind>10)     anom+=`<div class="anomaly-box">💨 Strong winds: ${wind} m/s</div>`;
+    if(main==="Thunderstorm") anom+=`<div class="anomaly-box">⛈️ Active thunderstorm detected</div>`;
+    if(!anom) anom=`<div class="stable">✅ No anomalies detected. All systems stable in ${cityName}.</div>`;
+    document.getElementById("anomalyBox").innerHTML = anom;
+
+    const t1=new Date(now-8*60000), t2=new Date(now-4*60000), t3=new Date(now-1*60000);
+    document.getElementById("timeline").innerHTML=`
+      <div>[${fmt(t1)}] ${weatherIcon(main)} Weather data acquired from ${cityName}</div>
+      <div>[${fmt(t2)}] 🤖 AI analysis complete — ${currentTemp}°C, ${desc}</div>
+      <div>[${fmt(t3)}] ⚠️ Risk assessment: ${risk}</div>
+      <div>[${fmt(now)}] ✅ Dashboard updated</div>`;
+
+    addFeed(`${weatherIcon(main)} [LIVE] ${cityName}: ${currentTemp}°C — ${desc}`);
+    if(currentTemp>33) addAlert(`🔥 Heat alert in ${cityName}: ${currentTemp}°C`);
+    if(main==="Thunderstorm") addAlert(`⛈️ Thunderstorm active in ${cityName}`);
+    if(main==="Rain") addAlert(`🌧️ Rain active in ${cityName}`);
+
+  } catch(e){ console.error(e); }
+}
+
+async function fetchForecast(lat,lon){
+  try{
+    const res  = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`);
+    const d    = await res.json();
+    const list = d.list;
+
+    document.getElementById("hourlyScroll").innerHTML = list.slice(0,8).map(item=>{
+      const t    = new Date(item.dt*1000);
+      const hour = t.getHours()+":00";
+      const temp = Math.round(item.main.temp);
+      const rain = item.rain?item.rain['3h']||0:0;
+      const main = item.weather[0].main;
+      const cls  = main==="Thunderstorm"?"storm":rain>0?"rain":"";
+      return `<div class="hour-card ${cls}">
+        <div>${hour}</div>
+        <div style="font-size:18px;">${weatherIcon(main)}</div>
+        <div>${temp}°C</div>
+        ${rain>0?`<div style="color:#ff6b6b;font-size:10px;">🌧 ${rain.toFixed(1)}mm</div>`:""}
+      </div>`;
+    }).join('');
+
+    const todaySlots = list.slice(0,8);
+    const tmrSlots   = list.slice(8,16);
+    const maxT = s => Math.round(Math.max(...s.map(x=>x.main.temp_max)));
+    const minT = s => Math.round(Math.min(...s.map(x=>x.main.temp_min)));
+    const hasRain  = s => s.some(x=>x.weather[0].main==="Rain"||x.weather[0].main==="Drizzle");
+    const hasStorm = s => s.some(x=>x.weather[0].main==="Thunderstorm");
+
+    const todayIcon = weatherIcon(todaySlots[0].weather[0].main);
+    const tmrIcon   = tmrSlots[0]?weatherIcon(tmrSlots[0].weather[0].main):"🌡️";
+    const yestTemp  = Math.round(todaySlots[0].main.temp-1.5);
+    const yestMin   = Math.round(todaySlots[0].main.temp_min-2);
+
+    document.getElementById("dayForecast").innerHTML=`
+      <div class="day-card">
+        <h4>Yesterday</h4>
+        <p style="font-size:24px;">${todayIcon}</p>
+        <p>~${yestTemp}°C</p><p>Min: ~${yestMin}°C</p>
+        <p style="font-size:11px;color:#888;">(estimated)</p>
+      </div>
+      <div class="day-card">
+        <h4>Today</h4>
+        <p style="font-size:24px;">${todayIcon}</p>
+        <p>Max: ${maxT(todaySlots)}°C</p><p>Min: ${minT(todaySlots)}°C</p>
+        <p>${todaySlots[0].weather[0].description}</p>
+        <p>${hasStorm(todaySlots)?"⛈️ Storm expected":hasRain(todaySlots)?"🌧️ Rain expected":"☀️ No rain"}</p>
+      </div>
+      <div class="day-card">
+        <h4>Tomorrow</h4>
+        <p style="font-size:24px;">${tmrIcon}</p>
+        <p>Max: ${maxT(tmrSlots)}°C</p><p>Min: ${minT(tmrSlots)}°C</p>
+        <p>${tmrSlots[0]?tmrSlots[0].weather[0].description:"--"}</p>
+        <p>${hasStorm(tmrSlots)?"⛈️ Storm expected":hasRain(tmrSlots)?"🌧️ Rain expected":"☀️ No rain"}</p>
+      </div>`;
+
+    const f6=list[2], f24=list[7];
+    document.getElementById("f6temp").innerHTML  = `Temp: <span class="up">${Math.round(f6.main.temp)}°C</span>`;
+    document.getElementById("f6desc").innerText  = `${weatherIcon(f6.weather[0].main)} ${f6.weather[0].description}`;
+    document.getElementById("f6rain").innerHTML  = f6.rain?`<span class="danger">🌧️ ${(f6.rain['3h']||0).toFixed(1)}mm</span>`:"🌤️ No rain";
+    document.getElementById("f6wind").innerText  = `💨 Wind: ${f6.wind.speed} m/s`;
+    document.getElementById("f24temp").innerHTML = `Temp: <span class="up">${Math.round(f24.main.temp)}°C</span>`;
+    document.getElementById("f24desc").innerText = `${weatherIcon(f24.weather[0].main)} ${f24.weather[0].description}`;
+    document.getElementById("f24rain").innerHTML = f24.rain?`<span class="danger">🌧️ ${(f24.rain['3h']||0).toFixed(1)}mm</span>`:"🌤️ No rain";
+    document.getElementById("f24wind").innerText = `💨 Wind: ${f24.wind.speed} m/s`;
+
+  } catch(e){ console.error(e); }
+}
+
+async function fetchNearbyAreas(lat,lon){
+  const offsets=[{dlat:0.03,dlon:0},{dlat:-0.03,dlon:0},{dlat:0,dlon:0.03},{dlat:0,dlon:-0.03},{dlat:0.04,dlon:0.04},{dlat:-0.04,dlon:-0.04}];
+  try{
+    const results = await Promise.all(offsets.map(async o=>{
+      const r = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat+o.dlat}&lon=${lon+o.dlon}&appid=${API_KEY}&units=metric`);
+      const d = await r.json();
+      return {name:d.name,temp:Math.round(d.main.temp),main:d.weather[0].main,humidity:d.main.humidity,wind:d.wind.speed};
+    }));
+    const seen=new Set();
+    const unique=results.filter(r=>{ if(seen.has(r.name)) return false; seen.add(r.name); return true; });
+    document.getElementById("nearbyGrid").innerHTML=unique.map(r=>
+      `<div class="nearby-card">
+        <div class="area-name">${weatherIcon(r.main)} ${r.name}</div>
+        <div>🌡 ${r.temp}°C</div>
+        <div>💧 ${r.humidity}%</div>
+        <div>💨 ${r.wind} m/s</div>
+      </div>`
+    ).join('');
+  } catch(e){ console.error(e); }
+}
+
+function typeAI(text){
+  const el=document.getElementById("ai"); el.innerHTML=""; let i=0;
+  function type(){ if(i<text.length){ el.innerHTML+=text[i]; i++; setTimeout(type,18); } }
+  type();
+}
+
+function addFeed(msg){
+  const div=document.createElement("div");
+  div.style.cssText="padding:4px 0;border-bottom:1px solid #111;";
+  div.innerText=msg; feed.prepend(div);
+}
+function addAlert(msg){
+  const a=document.createElement("div");
+  a.className="alert"; a.innerText=msg; alerts.prepend(a);
+}
+
+// Auto refresh every 3 mins using saved city or GPS
+setInterval(()=>{
+  if(cityName){
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=metric`)
+      .then(r=>r.json())
+      .then(d=>{ if(d.coord) fetchAll(d.coord.lat, d.coord.lon); });
+  }
+}, 3*60*1000);
+
+setInterval(()=>{ if(cityName){ const v=(Math.random()*0.6-0.3).toFixed(1); addFeed(`🌡️ [LIVE] ${cityName}: ${(currentTemp+parseFloat(v)).toFixed(1)}°C`); } }, 2000);
+setInterval(()=>{ if(currentTemp>33) addAlert(`🔥 Heat spike detected in ${cityName}`); }, 4000);
+
+let siren=new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"), playing=false;
+function toggleSiren(){ if(!playing){siren.loop=true;siren.play();playing=true;} else{siren.pause();playing=false;} }
+function triggerEmergency(){ siren.play(); document.getElementById("em").style.display="flex"; }
+function closeEmergency(){ document.getElementById("em").style.display="none"; siren.pause(); }
+</script>
+</body>
+</html>

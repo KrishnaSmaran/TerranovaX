@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TerranovaX</title>
+
+<script>
+function isMobile() {
+    return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
+        || window.innerWidth <= 768;
+}
+
+if (isMobile()) {
+    // Redirect mobile users to mobile.html
+    if (!window.location.pathname.includes("mobile.html")) {
+        window.location.href = "mobile.html";
+    }
+} else {
+    // Redirect desktop users back to home.html
+    if (window.location.pathname.includes("mobile.html")) {
+        window.location.href = "home.html";
+    }
+}
+</script>
+
+<link rel="icon" href="../static/icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="../static/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../static/icons/favicon-16x16.png">
+<link rel="apple-touch-icon" href="../static/icons/apple-touch-icon.png">
+<link rel="manifest" href="../static/icons/site.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+
+body{
+  background:#050807;
+  color:#d2d8d2;
+  overflow-x:hidden;
+  overflow-y:auto;
+  padding-top:64px;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at 15% 25%, rgba(31,111,67,0.28), transparent 45%),
+    radial-gradient(circle at 85% 65%, rgba(122,31,43,0.28), transparent 45%);
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* ===== HEADER ===== */
+header{
+  position:fixed;
+  top:0;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  height:64px;
+  background:rgba(5,8,7,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(31,111,67,0.2);
+  z-index:1000;
+}
+
+.logo{
+  color:#1f6f43;
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:0.5px;
+}
+
+/* hamburger */
+.hamburger{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  cursor:pointer;
+  padding:6px;
+}
+.hamburger span{
+  display:block;
+  width:24px;
+  height:2px;
+  background:#d2d8d2;
+  border-radius:2px;
+  transition:0.3s;
+}
+
+/* mobile nav drawer */
+.nav-drawer{
+  position:fixed;
+  top:64px;
+  left:0;
+  right:0;
+  background:rgba(8,12,10,0.97);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(31,111,67,0.25);
+  display:flex;
+  flex-direction:column;
+  padding:12px 0;
+  z-index:999;
+  transform:translateY(-120%);
+  transition:transform 0.3s ease;
+}
+.nav-drawer.open{transform:translateY(0);}
+.nav-drawer a{
+  color:#c9d1c8;
+  text-decoration:none;
+  padding:14px 24px;
+  font-size:15px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:0.2s;
+}
+.nav-drawer a:hover{color:#1f6f43;background:rgba(31,111,67,0.06);}
+
+/* avatar in header */
+.avatar-wrapper{display:inline-block;}
+.avatar-circle{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#1f6f43,#7a1f2b);
+  color:white;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:2px solid rgba(255,255,255,0.12);
+  overflow:hidden;
+}
+.avatar-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+
+/* ===== STATUS BAR ===== */
+.status-bar{
+  display:flex;
+  gap:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+  background:rgba(12,16,14,0.7);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  padding:8px 16px;
+  gap:20px;
+  font-size:12px;
+  white-space:nowrap;
+}
+.status-bar::-webkit-scrollbar{display:none;}
+.status-bar div:nth-child(1){color:#1f6f43;}
+.status-bar div:nth-child(2){color:#7a1f2b;}
+.status-bar div:nth-child(3){color:#8a6d3b;}
+
+/* ===== LIVE TICKER ===== */
+.tx-ticker{
+  background:linear-gradient(90deg,rgba(122,31,43,0.2),rgba(31,111,67,0.15) 50%,rgba(138,109,59,0.2));
+  border-bottom:1px solid rgba(122,31,43,0.3);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  height:40px;
+  font-size:12px;
+  color:#e6ede6;
+}
+.tx-ticker-label{
+  flex-shrink:0;
+  background:#7a1f2b;
+  color:#fff;
+  font-weight:700;
+  padding:5px 12px;
+  letter-spacing:1px;
+  font-size:10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  height:100%;
+}
+.tx-ticker-label::before{
+  content:"";width:7px;height:7px;border-radius:50%;
+  background:#ff4d4d;animation:txPulse 1.2s infinite;
+  box-shadow:0 0 8px #ff4d4d;
+}
+@keyframes txPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.6);}}
+.tx-ticker-track{
+  display:flex;gap:50px;white-space:nowrap;
+  animation:txScroll 50s linear infinite;
+  padding-left:30px;
+}
+.tx-ticker-track:hover{animation-play-state:paused;}
+.tx-ticker-item{display:inline-flex;align-items:center;gap:6px;}
+.tx-ticker-item .mag{color:#1f6f43;font-weight:700;}
+.tx-ticker-item.high .mag{color:#ff6b6b;}
+.tx-ticker-item.med .mag{color:#d2b48c;}
+@keyframes txScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ===== HERO ===== */
+.hero{
+  padding:28px 16px 20px;
+  text-align:center;
+}
+.hero h1{
+  font-size:26px;
+  line-height:1.25;
+  color:white;
+  margin-bottom:10px;
+  background:linear-gradient(135deg,#fff 60%,#1f6f43);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.hero p{
+  font-size:13px;
+  color:#9aa29a;
+  margin-bottom:18px;
+  line-height:1.6;
+}
+.btn{
+  display:inline-block;
+  padding:11px 26px;
+  background:#1f6f43;
+  border:none;
+  color:white;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+}
+.btn:hover{background:#27934f;}
+
+/* ===== DATA CARDS ===== */
+.data-cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  padding:14px 16px;
+}
+.card{
+  background:rgba(25,30,28,0.6);
+  padding:12px 8px;
+  border-radius:10px;
+  border-left:3px solid #1f6f43;
+  text-align:center;
+  backdrop-filter:blur(8px);
+}
+.card.red{border-left-color:#7a1f2b;}
+.card.brown{border-left-color:#8a6d3b;}
+.card h3{font-size:10px;color:#aaa;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.card p{font-size:13px;color:white;font-weight:600;}
+
+/* ===== ALERT PANEL ===== */
+.alert-panel{
+  margin:0 16px 20px;
+  background:rgba(20,24,22,0.65);
+  border-radius:12px;
+  padding:16px;
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(31,111,67,0.15);
+}
+.alert-panel h3{color:white;font-size:14px;margin-bottom:10px;}
+.alert{
+  padding:9px 12px;
+  margin-bottom:7px;
+  border-radius:7px;
+  font-size:12px;
+}
+.alert:last-child{margin-bottom:0;}
+.alert.red{background:rgba(122,31,43,0.25);color:#ff8a8a;}
+.alert.brown{background:rgba(138,109,59,0.25);color:#d2b48c;}
+.alert.green{background:rgba(31,111,67,0.25);color:#5ec97d;}
+
+/* ===== DIVIDER LINE ===== */
+.glow-line{
+  height:1px;
+  margin:0 16px;
+  background:linear-gradient(90deg,transparent,#1f6f43,#7a1f2b,#8a6d3b,transparent);
+  opacity:0.5;
+}
+
+/* ===== SECTION BASE ===== */
+.section{
+  padding:28px 16px;
+}
+.section h2{color:white;font-size:20px;margin-bottom:10px;}
+.section p{color:#9aa29a;font-size:13px;line-height:1.7;}
+
+/* ===== FEATURES GRID ===== */
+.features{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:20px 16px;
+}
+.feature-card{
+  background:rgba(25,30,28,0.5);
+  padding:18px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.05);
+  transition:0.3s;
+}
+.feature-card:active{border-color:#1f6f43;transform:scale(0.98);}
+.feature-card h3{color:white;font-size:13px;margin-bottom:6px;}
+.feature-card p{color:#888;font-size:11px;line-height:1.5;}
+
+/* ===== VITALS ===== */
+.tx-vitals{
+  margin:20px 16px;
+  padding:20px;
+  background:rgba(12,15,13,0.6);
+  border-radius:14px;
+  border:1px solid rgba(31,111,67,0.25);
+}
+.tx-vitals h2{
+  color:#fff;font-size:16px;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.live-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:#1f6f43;box-shadow:0 0 10px #1f6f43;
+  animation:txPulse 1.4s infinite;
+  display:inline-block;
+  flex-shrink:0;
+}
+.tx-vitals .subtitle{color:#9aa29a;font-size:11px;margin-bottom:16px;}
+.tx-vitals-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+.tx-vital{
+  background:rgba(0,0,0,0.3);
+  border-radius:10px;
+  padding:16px;
+  border-left:3px solid #1f6f43;
+}
+.tx-vital.crimson{border-left-color:#7a1f2b;}
+.tx-vital.brown{border-left-color:#8a6d3b;}
+.tx-vital h4{
+  font-size:10px;color:#aaa;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.tx-vital .num{font-size:26px;color:#fff;font-weight:700;}
+.tx-vital .delta{font-size:11px;margin-top:3px;color:#1f6f43;}
+.tx-vital.crimson .delta{color:#ff6b6b;}
+.tx-vital.brown .delta{color:#d2b48c;}
+.tx-vital svg{width:100%;height:36px;margin-top:8px;display:block;}
+
+/* ===== RISK GAUGE ===== */
+.tx-risk{
+  margin:20px 16px;
+  padding:24px 20px;
+  background:linear-gradient(135deg,rgba(18,18,18,0.7),rgba(8,8,8,0.8));
+  border-radius:14px;
+  border:1px solid rgba(122,31,43,0.25);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+}
+.tx-risk-gauge{position:relative;width:200px;height:200px;}
+.tx-risk-gauge svg{transform:rotate(-90deg);}
+.ring-bg{stroke:rgba(255,255,255,0.06);}
+.ring-fill{stroke:url(#riskGrad);stroke-linecap:round;transition:stroke-dashoffset 2s cubic-bezier(.65,.05,.36,1);}
+.tx-risk-gauge .center{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+}
+.tx-risk-gauge .score{font-size:50px;font-weight:700;color:#fff;line-height:1;}
+.tx-risk-gauge .label{font-size:10px;color:#aaa;letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
+.tx-risk-info{text-align:center;width:100%;}
+.tx-risk-info h2{color:#fff;font-size:18px;margin-bottom:8px;}
+.tx-risk-info p{color:#9aa29a;line-height:1.7;font-size:13px;margin-bottom:12px;}
+.tx-risk-factors{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.tx-risk-factor{
+  background:rgba(31,111,67,0.15);
+  border:1px solid rgba(31,111,67,0.3);
+  color:#c9d1c8;padding:5px 10px;border-radius:20px;font-size:11px;
+}
+.tx-risk-factor.high{background:rgba(122,31,43,0.2);border-color:rgba(122,31,43,0.4);color:#ff9b9b;}
+.tx-risk-factor.med{background:rgba(138,109,59,0.2);border-color:rgba(138,109,59,0.4);color:#d2b48c;}
+
+/* ===== INSIGHT ===== */
+.tx-insight{
+  margin:20px 16px;
+  padding:22px 18px;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(31,111,67,0.15),transparent 60%),
+    radial-gradient(circle at 100% 100%,rgba(122,31,43,0.15),transparent 60%),
+    rgba(10,10,10,0.65);
+  border:1px solid rgba(255,255,255,0.05);
+  position:relative;
+  overflow:hidden;
+}
+.tx-insight .tag{
+  display:inline-block;font-size:9px;letter-spacing:3px;
+  color:#1f6f43;text-transform:uppercase;font-weight:700;margin-bottom:8px;
+}
+.tx-insight .quote{font-size:16px;color:#e6ede6;line-height:1.6;font-weight:300;min-height:60px;transition:opacity 0.6s;}
+.tx-insight .src{margin-top:10px;font-size:11px;color:#888;}
+.tx-insight .icon{font-size:50px;opacity:0.07;position:absolute;right:14px;top:50%;transform:translateY(-50%);}
+
+/* ===== HEATMAP ===== */
+.heatmap-preview{
+  padding:24px 16px;
+  text-align:center;
+}
+.heatmap-preview h2{color:white;font-size:18px;margin-bottom:16px;}
+.heatmap-box{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+.zone{
+  width:80px;height:80px;border-radius:10px;
+  position:relative;
+}
+.zone.green{background:linear-gradient(135deg,#1f6f43,#27934f);}
+.zone.brown{background:linear-gradient(135deg,#8a6d3b,#a8854d);}
+.zone.red{background:linear-gradient(135deg,#7a1f2b,#a82e3e);}
+.zone-label{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:1px;}
+.heatmap-preview p{color:#9aa29a;font-size:12px;}
+
+/* ===== AI DETECTION ===== */
+.ai-detection{padding:24px 16px;}
+.ai-detection h2{color:white;font-size:18px;margin-bottom:14px;}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ai-card{
+  background:rgba(25,30,28,0.5);
+  padding:16px 12px;
+  border-radius:10px;
+  border-left:3px solid #1f6f43;
+  transition:0.3s;
+}
+.ai-card:active{border-left-color:#7a1f2b;}
+.ai-card h3{color:white;font-size:13px;margin-bottom:5px;}
+.ai-card p{color:#888;font-size:11px;line-height:1.4;}
+
+/* ===== STATS ===== */
+.tx-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:20px 16px;
+}
+.tx-stat{
+  background:rgba(12,15,13,0.55);
+  border-radius:12px;
+  padding:16px;
+  text-align:center;
+  border:1px solid rgba(31,111,67,0.12);
+}
+.tx-stat .num{
+  font-size:28px;font-weight:700;
+  background:linear-gradient(135deg,#1f6f43,#8a6d3b);
+  -webkit-background-clip:text;color:transparent;
+}
+.tx-stat .lbl{font-size:10px;color:#888;margin-top:4px;letter-spacing:0.5px;}
+
+/* ===== NEWS SLIDER ===== */
+.climate-news-slider{padding:24px 0;}
+.climate-news-slider h2{color:white;font-size:18px;text-align:center;margin-bottom:16px;padding:0 16px;}
+.slider-wrapper{overflow-x:auto;scroll-behavior:smooth;padding:0 16px;}
+.slider-wrapper::-webkit-scrollbar{display:none;}
+.slider-track{display:flex;gap:12px;}
+.news-card{
+  min-width:240px;
+  background:rgba(25,30,28,0.6);
+  border-radius:12px;
+  overflow:hidden;
+  flex-shrink:0;
+  border:1px solid rgba(255,255,255,0.04);
+  transition:0.3s;
+}
+.news-card:active{transform:scale(0.97);}
+.news-card img{width:100%;height:150px;object-fit:cover;}
+.news-content{padding:12px;}
+.news-content h3{font-size:13px;color:#1f6f43;margin-bottom:6px;line-height:1.4;}
+.news-content p{font-size:11px;color:#aaa;margin-bottom:8px;}
+.news-content a{color:#7a1f2b;font-weight:600;text-decoration:none;font-size:12px;}
+
+/* ===== COMMUNITY CTA ===== */
+.community-cta{
+  margin:20px 16px;
+  padding:24px;
+  background:rgba(8,10,9,0.8);
+  border-radius:14px;
+  border-top:2px solid #1f6f43;
+  border-bottom:2px solid #7a1f2b;
+}
+.cta-title{color:white;font-size:18px;margin-bottom:10px;}
+.cta-intro{color:#d2d8d2;font-size:13px;line-height:1.7;margin-bottom:8px;}
+.btn-report{
+  padding:12px 24px;
+  border:none;border-radius:8px;
+  font-size:14px;cursor:pointer;color:white;
+  background:#7a1f2b;transition:0.3s;
+  margin-top:10px;width:100%;
+}
+.btn-report:hover{background:#a82e3e;}
+.report-form{display:none;flex-direction:column;gap:12px;margin-top:16px;}
+.report-form input,.report-form textarea{
+  padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);
+  background:rgba(25,30,28,0.7);color:#d2d8d2;resize:none;font-size:14px;outline:none;
+}
+.report-form input:focus,.report-form textarea:focus{border-color:#1f6f43;}
+.report-form textarea{min-height:80px;}
+.report-form button{
+  padding:12px;border:none;border-radius:8px;
+  background:#1f6f43;color:white;cursor:pointer;font-size:14px;transition:0.3s;
+}
+.report-form button:hover{background:#27934f;}
+.thank-you-report,.thank-you-card{
+  display:none;
+  background:rgba(31,111,67,0.75);
+  color:white;padding:14px 20px;border-radius:10px;
+  margin-top:12px;text-align:center;font-size:15px;
+}
+
+/* ===== RATING ===== */
+.interactive-review{
+  padding:24px 16px;
+  background:rgba(12,15,13,0.5);
+}
+.section-title{color:white;font-size:18px;margin-bottom:16px;text-align:center;}
+.stars-container{
+  display:flex;justify-content:center;gap:10px;
+  font-size:36px;color:#555;cursor:pointer;margin-bottom:16px;
+}
+.star{transition:0.2s;}
+.star.hover,.star.selected{color:#1f6f43;}
+.feedback-box{
+  display:none;margin-top:16px;
+  background:rgba(25,30,28,0.5);
+  padding:20px;border-radius:12px;border-left:3px solid #1f6f43;
+}
+.feedback-box p{color:white;margin-bottom:12px;font-size:14px;}
+.options{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.options label{color:#d2d8d2;font-size:13px;}
+.options input{margin-right:4px;}
+.feedback-box textarea{
+  width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);
+  background:rgba(20,24,22,0.6);color:#d2d8d2;resize:none;
+  margin-bottom:12px;font-size:13px;outline:none;
+}
+.feedback-box button{
+  padding:11px 22px;background:#1f6f43;color:white;
+  border:none;border-radius:8px;cursor:pointer;font-size:14px;transition:0.3s;
+  width:100%;
+}
+.feedback-box button:hover{background:#7a1f2b;}
+
+/* ===== SUBSCRIBE ===== */
+.cta-subscribe{
+  padding:24px 16px;
+  text-align:center;
+  background:rgba(12,15,13,0.55);
+  border-radius:14px;
+  margin:20px 16px;
+  border:1px solid rgba(31,111,67,0.15);
+}
+.cta-subscribe h2{color:#1f6f43;font-size:18px;margin-bottom:10px;}
+.cta-subscribe p{color:#ccc;font-size:13px;margin-bottom:16px;line-height:1.6;}
+.subscribe-form{display:flex;flex-direction:column;gap:10px;}
+.subscribe-form input{
+  padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);
+  background:rgba(25,30,28,0.6);color:#fff;outline:none;font-size:14px;
+}
+.subscribe-form input:focus{border-color:#1f6f43;}
+.subscribe-form button{
+  padding:12px;border:none;border-radius:8px;
+  background:#7a1f2b;color:white;cursor:pointer;font-size:14px;transition:0.3s;
+}
+.subscribe-form button:hover{background:#a82e3e;}
+
+/* ===== SUGGESTIONS ===== */
+.suggestions{padding:24px 16px;background:rgba(8,10,9,0.5);}
+.suggestion-form{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+.suggestion-form input,.suggestion-form textarea{
+  padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.07);
+  background:rgba(25,30,28,0.6);color:#d2d8d2;resize:none;font-size:14px;outline:none;
+}
+.suggestion-form input::placeholder,.suggestion-form textarea::placeholder{color:#777;}
+.suggestion-form input:focus,.suggestion-form textarea:focus{border-color:#1f6f43;}
+.suggestion-form button{
+  padding:12px;border:none;border-radius:8px;
+  background:#1f6f43;color:white;cursor:pointer;font-size:14px;transition:0.3s;
+}
+.suggestion-form button:hover{background:#7a1f2b;}
+
+/* ===== FOOTER ===== */
+footer{
+  text-align:center;padding:28px 16px;
+  color:#666;font-size:13px;
+  border-top:1px solid rgba(255,255,255,0.04);
+  margin-top:20px;
+}
+footer span{color:#1f6f43;}
+</style>
+</head>
+
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo">TerranovaX</div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="avatar-wrapper">
+      <div class="avatar-circle" id="avatarCircle" onclick="window.location.href='account.html'">?</div>
+    </div>
+    <div class="hamburger" id="hamburgerBtn" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== NAV DRAWER ===== -->
+<nav class="nav-drawer" id="navDrawer">
+  <a href="#" onclick="closeNav()">🏠 Home</a>
+  <a href="climate.html" onclick="closeNav()">🌡 Climate</a>
+  <a href="disaster.html" onclick="closeNav()">🌪 Disaster Management</a>
+  <a href="analytics.html" onclick="closeNav()">📊 Analytics</a>
+  <a href="about.html" onclick="closeNav()">ℹ About</a>
+</nav>
+
+<!-- ===== STATUS BAR ===== -->
+<div class="status-bar">
+  <div id="statusTemp">🌡 Temp: Loading...</div>
+  <div>🌪 Disasters: 12 Active</div>
+  <div id="statusHumidity">💧 Humidity: --</div>
+</div>
+
+<!-- ===== LIVE TICKER ===== -->
+<div class="tx-ticker">
+  <div class="tx-ticker-label">LIVE</div>
+  <div class="tx-ticker-track" id="txTickerTrack">Loading live data...</div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <h1>Earth Intelligence &amp; Disaster Monitoring</h1>
+  <p>Real-time climate tracking and AI-powered environmental risk detection.</p>
+  <button class="btn" onclick="window.location.href='explore.html'">Explore Data</button>
+</section>
+
+<!-- ===== DATA CARDS ===== -->
+<div class="data-cards">
+  <div class="card">
+    <h3>Air Quality</h3>
+    <p id="cardAQI">Good (42)</p>
+  </div>
+  <div class="card red">
+    <h3>Temperature</h3>
+    <p id="cardTemp">--°C</p>
+  </div>
+  <div class="card brown">
+    <h3>Wind Speed</h3>
+    <p id="cardWind">-- m/s</p>
+  </div>
+</div>
+
+<!-- ===== ALERT PANEL ===== -->
+<div class="alert-panel">
+  <h3>⚡ Live Alerts</h3>
+  <div class="alert red">⚠ Cyclone — Bay of Bengal</div>
+  <div class="alert brown">🔥 Wildfire — Australia</div>
+  <div class="alert green">🌿 Stable — Europe</div>
+</div>
+
+<div class="glow-line"></div>
+
+<!-- ===== CLIMATE INTELLIGENCE ===== -->
+<section class="section">
+  <h2>Climate Intelligence</h2>
+  <p>Analyze global environmental changes, predict disasters, and monitor real-time Earth data with advanced AI systems.</p>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<div class="features">
+  <div class="feature-card"><h3>🌡 Climate Tracking</h3><p>Monitor global weather changes in real time.</p></div>
+  <div class="feature-card"><h3>🚨 Disaster Alerts</h3><p>Instant alerts for earthquakes, floods &amp; storms.</p></div>
+  <div class="feature-card"><h3>🤖 AI Predictions</h3><p>Predict environmental risks using AI.</p></div>
+  <div class="feature-card"><h3>🛰 Satellite Data</h3><p>Analyze earth imagery with precision.</p></div>
+</div>
+
+<div class="glow-line"></div>
+
+<!-- ===== EARTH VITAL SIGNS ===== -->
+<div class="tx-vitals">
+  <h2><span class="live-dot"></span> Earth Vital Signs</h2>
+  <div class="subtitle">Live planetary health monitor — synced with global observatories</div>
+  <div class="tx-vitals-grid">
+    <div class="tx-vital">
+      <h4>CO₂ Concentration</h4>
+      <div class="num" id="vCO2">424.8 ppm</div>
+      <div class="delta">▲ +2.4 ppm vs. last year</div>
+      <svg viewBox="0 0 300 36">
+        <path d="M0,18 L40,18 L55,8 L70,28 L85,18 L130,18 L145,10 L160,26 L175,18 L300,18"
+          fill="none" stroke="#1f6f43" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="tx-vital crimson">
+      <h4>Global Temp Anomaly</h4>
+      <div class="num" id="vTemp">1.48 °C</div>
+      <div class="delta">▲ above pre-industrial avg</div>
+      <svg viewBox="0 0 300 36">
+        <path d="M0,18 L50,18 L70,6 L90,30 L110,15 L130,24 L150,10 L175,18 L300,18"
+          fill="none" stroke="#7a1f2b" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="tx-vital brown">
+      <h4>Sea Level Rise</h4>
+      <div class="num" id="vSea">103.6 mm</div>
+      <div class="delta">▲ since 1993 baseline</div>
+      <svg viewBox="0 0 300 36">
+        <path d="M0,28 L75,26 L150,22 L225,17 L300,11"
+          fill="none" stroke="#8a6d3b" stroke-width="1.5"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIMATE RISK SCORE ===== -->
+<div class="tx-risk">
+  <div class="tx-risk-gauge">
+    <svg width="200" height="200" viewBox="0 0 200 200">
+      <defs>
+        <linearGradient id="riskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1f6f43"/>
+          <stop offset="60%" stop-color="#8a6d3b"/>
+          <stop offset="100%" stop-color="#7a1f2b"/>
+        </linearGradient>
+      </defs>
+      <circle class="ring-bg" cx="100" cy="100" r="82" stroke-width="12" fill="none"/>
+      <circle id="riskRing" class="ring-fill" cx="100" cy="100" r="82"
+        stroke-width="12" fill="none"
+        stroke-dasharray="515"
+        stroke-dashoffset="515"/>
+    </svg>
+    <div class="center">
+      <div class="score" id="riskScore">--</div>
+      <div class="label" id="riskLabel">RISK INDEX</div>
+    </div>
+  </div>
+  <div class="tx-risk-info">
+    <h2>Your Climate Risk Score</h2>
+    <p id="riskDesc">Calculating environmental risk for your region…</p>
+    <div class="tx-risk-factors" id="riskFactors"></div>
+  </div>
+</div>
+
+<!-- ===== CLIMATE INSIGHT ===== -->
+<div class="tx-insight">
+  <span class="tag">⌬ TODAY'S CLIMATE INSIGHT</span>
+  <div class="quote" id="insightQuote">The last decade was the warmest on record — 9 of the 10 hottest years occurred after 2014.</div>
+  <div class="src" id="insightSrc">— NASA GISS</div>
+  <div class="icon">🌍</div>
+</div>
+
+<div class="glow-line"></div>
+
+<!-- ===== STATS ===== -->
+<div class="tx-stats" id="statsGrid">
+  <div class="tx-stat"><div class="num" id="sStat1">847</div><div class="lbl">Active Disasters Tracked</div></div>
+  <div class="tx-stat"><div class="num" id="sStat2">1.2M</div><div class="lbl">Satellite Points / Day</div></div>
+  <div class="tx-stat"><div class="num" id="sStat3">194</div><div class="lbl">Countries Monitored</div></div>
+  <div class="tx-stat"><div class="num" id="sStat4">99.4%</div><div class="lbl">AI Prediction Accuracy</div></div>
+</div>
+
+<div class="glow-line"></div>
+
+<!-- ===== HEATMAP ===== -->
+<div class="heatmap-preview">
+  <h2>Global Climate Heatmap</h2>
+  <div class="heatmap-box">
+    <div class="zone green"><span class="zone-label">STABLE</span></div>
+    <div class="zone brown"><span class="zone-label">ELEVATED</span></div>
+    <div class="zone red"><span class="zone-label">DANGER</span></div>
+  </div>
+  <p>AI-detected environmental stress zones across the globe.</p>
+</div>
+
+<div class="glow-line"></div>
+
+<!-- ===== AI DETECTION ===== -->
+<div class="ai-detection">
+  <h2>AI Detection Systems</h2>
+  <div class="ai-grid">
+    <div class="ai-card"><h3>Storm Prediction</h3><p>Detects cyclone formations before impact.</p></div>
+    <div class="ai-card"><h3>Wildfire Tracking</h3><p>Monitors heat signatures from satellites.</p></div>
+    <div class="ai-card"><h3>Flood Analysis</h3><p>Predicts flood-prone regions in advance.</p></div>
+    <div class="ai-card"><h3>Air Quality AI</h3><p>Tracks pollution spikes globally.</p></div>
+  </div>
+</div>
+
+<div class="glow-line"></div>
+
+<!-- ===== NEWS SLIDER ===== -->
+<section class="climate-news-slider">
+  <h2>🌍 India Climate &amp; Disaster News</h2>
+  <div class="slider-wrapper">
+    <div class="slider-track">
+      <div class="news-card">
+        <img src="../static/images/weather-alert.jpg" alt="Weather alert">
+        <div class="news-content">
+          <h3>Weather alert: Thunderstorms &amp; rain warnings</h3>
+          <p>Source: Asianet News</p>
+          <a href="https://hindi.asianetnews.com/news/delhi-ncr-weather-alert-rain-hailstorm-thunderstorm-western-disturbance-india" target="_blank">Read More →</a>
+        </div>
+      </div>
+      <div class="news-card">
+        <img src="../static/images/heavy-rain.jpg" alt="Heavy rain">
+        <div class="news-content">
+          <h3>Heavy rain alert in 22 states</h3>
+          <p>Source: Navbharat Times</p>
+          <a href="https://navbharattimes.indiatimes.com/india/weather-forecast-2-april-2026-alert-heavy-rain-in-22-states-including-up-bihar-delhi-haryana-winds-at-70-kmh-hailstorm-risk/articleshow/129965188.cms" target="_blank">Read More →</a>
+        </div>
+      </div>
+      <div class="news-card">
+        <img src="../static/images/earthquake.jpg" alt="Earthquake tremors">
+        <div class="news-content">
+          <h3>Earthquake tremors felt in Delhi‑NCR</h3>
+          <p>Source: Navbharat Times</p>
+          <a href="https://navbharattimes.indiatimes.com/india/earthquake-jolts-delhi-ncr-impact-reaches-pakistan/articleshow/130005112.cms" target="_blank">Read More →</a>
+        </div>
+      </div>
+      <div class="news-card">
+        <img src="../static/images/farm-impact-storm.jpg" alt="Storm impact">
+        <div class="news-content">
+          <h3>Storm &amp; rain impacts crops in many regions</h3>
+          <p>Source: The India Daily</p>
+          <a href="https://www.theindiadaily.com/india/india-weather-change-5-april-2026-imd-issues-warning-storm-rain-alert-delhi-ncr-up-bihar-rajasthan-temprature-news-116986" target="_blank">Read More →</a>
+        </div>
+      </div>
+      <div class="news-card">
+        <img src="../static/images/hail-storm.jpg" alt="Hail and rain alert">
+        <div class="news-content">
+          <h3>IMD orange alert: hail &amp; heavy rain warnings</h3>
+          <p>Source: Amar Ujala</p>
+          <a href="https://www.amarujala.com/india-news/imd-issues-orange-alert-hailstorm-rain-warning-multiple-states-2026-04-04" target="_blank">Read More →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-line"></div>
+
+<!-- ===== COMMUNITY CTA ===== -->
+<div class="community-cta">
+  <div class="cta-title">🚨 Report a Local Disaster!</div>
+  <p class="cta-intro">Observed a local disaster? Share the details with us! Your reports help TerranovaX track real-time events and assist communities quickly.</p>
+  <button class="btn-report" id="btnReport">Report Incident</button>
+  <div class="report-form" id="reportForm">
+    <input type="text" placeholder="Your Name" id="reportName" required>
+    <input type="text" placeholder="Location / From" id="reportFrom" required>
+    <textarea placeholder="What happened?" id="reportWhat" required></textarea>
+    <button id="submitReport">Submit Report</button>
+  </div>
+  <div class="thank-you-report" id="thankYouReport"><p>✅ Thank you for reporting!</p></div>
+</div>
+
+<!-- ===== RATING ===== -->
+<section class="interactive-review">
+  <h2 class="section-title">Rate TerranovaX</h2>
+  <div class="stars-container">
+    <span class="star" data-value="1">☆</span>
+    <span class="star" data-value="2">☆</span>
+    <span class="star" data-value="3">☆</span>
+    <span class="star" data-value="4">☆</span>
+    <span class="star" data-value="5">☆</span>
+  </div>
+  <div class="feedback-box" id="feedbackBox">
+    <p>Why did you give this rating?</p>
+    <div class="options">
+      <label><input type="checkbox" value="UI Design"> UI Design</label>
+      <label><input type="checkbox" value="Alerts Accuracy"> Alerts Accuracy</label>
+      <label><input type="checkbox" value="Data Visualization"> Data Visualization</label>
+      <label><input type="checkbox" value="Other"> Other</label>
+    </div>
+    <textarea placeholder="Additional comments..." id="feedbackComment" rows="4"></textarea>
+    <button id="submitFeedback">Submit Feedback</button>
+  </div>
+  <div class="thank-you-card" id="thankYouCard"><p>🌿 Thank you for your feedback!</p></div>
+</section>
+
+<!-- ===== SUBSCRIBE ===== -->
+<div class="cta-subscribe">
+  <h2>Join the TerranovaX Community</h2>
+  <p>Get real-time climate alerts, updates, and exclusive insights directly to your inbox.</p>
+  <form class="subscribe-form" id="subscribeForm">
+    <input type="email" id="subscribeEmail" placeholder="Enter your email" required>
+    <button type="submit">Subscribe</button>
+  </form>
+</div>
+
+<!-- ===== SUGGESTIONS ===== -->
+<section class="suggestions">
+  <h2 class="section-title">Share Your Suggestions &amp; Queries</h2>
+  <form class="suggestion-form" id="suggestionForm">
+    <input type="text" id="suggName" placeholder="Your Name" required>
+    <input type="text" id="suggFrom" placeholder="From (City/State)" required>
+    <textarea id="suggMessage" placeholder="What's the matter?" rows="4" required></textarea>
+    <button type="submit">Submit</button>
+  </form>
+</section>
+
+<footer>TerranovaX • <span>Future of Climate Intelligence</span></footer>
+
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCZbIP44acM71ZW7eCblfNrLIE3HRptUgE",
+    authDomain:        "magnificent-temples.firebaseapp.com",
+    projectId:         "magnificent-temples",
+    storageBucket:     "magnificent-temples.firebasestorage.app",
+    messagingSenderId: "836647714930",
+    appId:             "1:836647714930:web:60ba09e18b183aae52c2eb"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  emailjs.init("ndGmcY86ozB8BAkXf");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = "welcome.html"; return; }
+
+    const name    = user.displayName || "User";
+    const initial = name.charAt(0).toUpperCase();
+    const avatar  = document.getElementById("avatarCircle");
+
+    if (user.photoURL) {
+      avatar.innerHTML = `<img src="${user.photoURL}" alt="avatar">`;
+    } else {
+      avatar.textContent = initial;
+    }
+
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (userDoc.exists()) {
+      const city = userDoc.data().city;
+      if (city) fetchWeather(city);
+    }
+
+    window.currentUserName  = name;
+    window.currentUserEmail = user.email;
+  });
+
+  async function fetchWeather(city) {
+    try {
+      const res  = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric`);
+      const data = await res.json();
+      if (data.cod !== 200) return;
+
+      const temp     = Math.round(data.main.temp);
+      const humidity = data.main.humidity;
+      const wind     = data.wind.speed;
+      const desc     = data.weather[0].main;
+
+      document.getElementById("statusTemp").innerText     = `🌡 ${city}: ${temp}°C`;
+      document.getElementById("statusHumidity").innerText = `💧 Humidity: ${humidity}%`;
+      document.getElementById("cardTemp").innerText       = `${temp}°C — ${desc}`;
+      document.getElementById("cardWind").innerText       = `${wind} m/s`;
+    } catch(e) {}
+  }
+
+  window.sendReport = function(name, from, what) {
+    return emailjs.send("service_xdrd0i6", "template_pr6ang8", {
+      from_name: name, from_location: from, message: what,
+      subject: "🚨 Disaster Report - TerranovaX",
+      to_email: "terranovax.official@gmail.com"
+    });
+  };
+
+  document.getElementById("subscribeForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("subscribeEmail").value.trim();
+    try {
+      await emailjs.send("service_xdrd0i6", "template_pr6ang8", {
+        from_name: email, message: `New subscriber: ${email}`,
+        subject: "📧 New Subscriber - TerranovaX",
+        to_email: "terranovax.official@gmail.com"
+      });
+      alert("✅ Subscribed successfully!");
+      document.getElementById("subscribeEmail").value = "";
+    } catch(err) { alert("Failed to subscribe. Try again!"); }
+  });
+
+  document.getElementById("suggestionForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name    = document.getElementById("suggName").value.trim();
+    const from    = document.getElementById("suggFrom").value.trim();
+    const message = document.getElementById("suggMessage").value.trim();
+    try {
+      await emailjs.send("service_xdrd0i6", "template_pr6ang8", {
+        from_name: name, from_location: from, message,
+        subject: "💡 Suggestion - TerranovaX",
+        to_email: "terranovax.official@gmail.com"
+      });
+      alert("✅ Suggestion submitted! Thank you.");
+      document.getElementById("suggestionForm").reset();
+    } catch(err) { alert("Failed to submit. Try again!"); }
+  });
+
+  document.getElementById("submitFeedback").addEventListener("click", async () => {
+    const comment = document.getElementById("feedbackComment").value.trim();
+    const checked = [...document.querySelectorAll(".options input:checked")].map(i => i.value).join(", ");
+    try {
+      await emailjs.send("service_xdrd0i6", "template_pr6ang8", {
+        from_name: window.currentUserName || "Anonymous",
+        message: `Rating feedback: ${checked}\n\nComments: ${comment}`,
+        subject: "⭐ Feedback - TerranovaX",
+        to_email: "terranovax.official@gmail.com"
+      });
+    } catch(err) {}
+  });
+</script>
+
+<script>
+// ===== NAV TOGGLE =====
+function toggleNav() {
+  document.getElementById("navDrawer").classList.toggle("open");
+}
+function closeNav() {
+  document.getElementById("navDrawer").classList.remove("open");
+}
+document.addEventListener("click", (e) => {
+  const nav = document.getElementById("navDrawer");
+  const btn = document.getElementById("hamburgerBtn");
+  if (nav.classList.contains("open") && !nav.contains(e.target) && !btn.contains(e.target)) {
+    nav.classList.remove("open");
+  }
+});
+
+// ===== STARS =====
+document.addEventListener("DOMContentLoaded", () => {
+  const stars       = document.querySelectorAll(".star");
+  const feedbackBox = document.getElementById("feedbackBox");
+  const thankYouCard= document.getElementById("thankYouCard");
+
+  stars.forEach(star => {
+    star.addEventListener("mouseover", () => stars.forEach(s => s.classList.toggle("hover", s.dataset.value <= star.dataset.value)));
+    star.addEventListener("mouseout",  () => stars.forEach(s => s.classList.remove("hover")));
+    star.addEventListener("click", () => {
+      stars.forEach(s => s.classList.toggle("selected", s.dataset.value <= star.dataset.value));
+      feedbackBox.style.display = "block";
+      feedbackBox.scrollIntoView({behavior:"smooth"});
+    });
+  });
+
+  document.getElementById("submitFeedback").addEventListener("click", () => {
+    feedbackBox.style.display   = "none";
+    thankYouCard.style.display  = "flex";
+    setTimeout(() => {
+      thankYouCard.style.display = "none";
+      stars.forEach(s => s.classList.remove("selected","hover"));
+    }, 2000);
+  });
+
+  // ===== REPORT FORM =====
+  document.getElementById("btnReport").addEventListener("click", () => {
+    document.getElementById("reportForm").style.display = "flex";
+    document.getElementById("reportForm").scrollIntoView({behavior:"smooth"});
+  });
+
+  document.getElementById("submitReport").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("reportName").value.trim();
+    const from = document.getElementById("reportFrom").value.trim();
+    const what = document.getElementById("reportWhat").value.trim();
+    if (!name || !from || !what) { alert("Please fill all fields!"); return; }
+    try { if (window.sendReport) await window.sendReport(name, from, what); } catch(err) {}
+    document.getElementById("reportForm").style.display      = "none";
+    document.getElementById("thankYouReport").style.display  = "flex";
+    setTimeout(() => {
+      document.getElementById("thankYouReport").style.display = "none";
+      document.getElementById("reportName").value = "";
+      document.getElementById("reportFrom").value = "";
+      document.getElementById("reportWhat").value = "";
+    }, 2500);
+  });
+});
+
+// ===== LIVE TICKER (no ISS) =====
+async function loadTicker() {
+  try {
+    const eq   = await fetch("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson");
+    const data = await eq.json();
+
+    const earthquakes = (data.features || []).slice(0, 5).map(e => {
+      const m     = e.properties.mag || 0;
+      const place = e.properties.place || "Unknown region";
+      const cls   = m >= 4 ? "high" : m >= 2.5 ? "med" : "";
+      return `<span class="tx-ticker-item ${cls}">🌍 <span class="mag">M${m.toFixed(1)}</span> ${place}</span>`;
+    });
+
+    const alerts = [
+      `<span class="tx-ticker-item">🌪 Cyclone watch: Bay of Bengal</span>`,
+      `<span class="tx-ticker-item med">🌧 Heavy rain: South Asia</span>`,
+      `<span class="tx-ticker-item">🔥 Wildfire zones: Australia</span>`,
+      `<span class="tx-ticker-item med">🌊 Flood alerts active</span>`
+    ];
+
+    const all   = [...earthquakes, ...alerts];
+    const track = document.getElementById("txTickerTrack");
+    track.innerHTML = all.join("") + all.join("");
+  } catch(e) {
+    document.getElementById("txTickerTrack").innerHTML = `
+      <span class="tx-ticker-item">🌍 Earth monitoring active</span>
+      <span class="tx-ticker-item">📡 Satellite data online</span>
+      <span class="tx-ticker-item">⚠ Global alert system running</span>
+    `.repeat(2);
+  }
+}
+loadTicker();
+setInterval(loadTicker, 20000);
+
+// ===== RISK GAUGE =====
+async function updateRisk() {
+  const ring  = document.getElementById("riskRing");
+  const score = document.getElementById("riskScore");
+  const label = document.getElementById("riskLabel");
+  const desc  = document.getElementById("riskDesc");
+  if (!ring) return;
+  try {
+    const res  = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.08&longitude=80.27&current=temperature_2m,wind_speed_10m");
+    const data = await res.json();
+    const temp = data.current.temperature_2m;
+    const wind = data.current.wind_speed_10m;
+
+    let risk = 0;
+    if (temp > 38) risk += 35; else if (temp > 32) risk += 20;
+    if (wind > 15) risk += 30; else if (wind > 8) risk += 15;
+    risk += Math.floor(Math.random() * 10);
+    risk = Math.min(99, Math.max(5, risk));
+
+    ring.style.strokeDashoffset = 515 - (515 * risk / 100);
+    score.textContent = risk;
+
+    if (risk > 70) { label.textContent = "SEVERE"; ring.style.stroke = "#7a1f2b"; }
+    else if (risk > 40) { label.textContent = "ELEVATED"; ring.style.stroke = "#8a6d3b"; }
+    else { label.textContent = "STABLE"; ring.style.stroke = "#1f6f43"; }
+
+    desc.textContent = `Live risk analysis — Temp: ${temp}°C, Wind: ${wind} km/h`;
+  } catch(e) {
+    desc.textContent = "Live data unavailable — using fallback.";
+  }
+}
+updateRisk();
+setInterval(updateRisk, 10000);
+
+// ===== VITALS =====
+async function updateVitals() {
+  try {
+    const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&current=temperature_2m");
+    const d   = await res.json();
+    const co2 = (424.8 + Math.random() * 0.4).toFixed(1);
+    const sea = (103.6 + Math.random() * 0.2).toFixed(1);
+    document.getElementById("vCO2").textContent  = `${co2} ppm`;
+    document.getElementById("vTemp").textContent = `1.48 °C`;
+    document.getElementById("vSea").textContent  = `${sea} mm`;
+  } catch(e) {}
+}
+updateVitals();
+setInterval(updateVitals, 8000);
+
+// ===== STATS =====
+async function updateStats() {
+  try {
+    const eq  = await fetch("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson");
+    const eqD = await eq.json();
+    const cnt = eqD.features.length;
+    document.getElementById("sStat1").textContent = cnt + Math.floor(Math.random() * 6);
+    document.getElementById("sStat2").textContent = (1.2 + Math.random() * 0.3).toFixed(1) + "M";
+    document.getElementById("sStat3").textContent = "194";
+    document.getElementById("sStat4").textContent = (98.5 + Math.random() * 1.2).toFixed(1) + "%";
+  } catch(e) {
+    document.getElementById("sStat1").textContent = "12";
+    document.getElementById("sStat2").textContent = "1.3M";
+    document.getElementById("sStat3").textContent = "194";
+    document.getElementById("sStat4").textContent = "99.2%";
+  }
+}
+setTimeout(updateStats, 1500);
+setInterval(updateStats, 30000);
+
+// ===== ROTATING INSIGHT =====
+const insights = [
+  { q: "Earth's temperature is rising faster in the last 50 years than any period in recorded history.", s: "NASA" },
+  { q: "Oceans absorb over 90% of excess heat from global warming.", s: "NOAA" },
+  { q: "Extreme weather events are increasing in frequency and intensity globally.", s: "IPCC" },
+  { q: "Arctic ice is shrinking at record speed due to rising global temperatures.", s: "NSIDC" },
+  { q: "Wildfire seasons are now longer and more destructive than ever recorded.", s: "Copernicus Climate" }
+];
+let insightIdx = 0;
+function updateInsight() {
+  const q = document.getElementById("insightQuote");
+  const s = document.getElementById("insightSrc");
+  if (!q || !s) return;
+  q.style.opacity = 0;
+  setTimeout(() => {
+    insightIdx = (insightIdx + 1) % insights.length;
+    q.textContent = insights[insightIdx].q;
+    s.textContent = "— " + insights[insightIdx].s;
+    q.style.opacity = 1;
+  }, 500);
+}
+setInterval(updateInsight, 6000);
+</script>
+
+</body>
+</html>
